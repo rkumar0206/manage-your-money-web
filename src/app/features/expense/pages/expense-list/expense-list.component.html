@@ -1,0 +1,553 @@
+<section class="relative min-h-full w-full px-4 pt-6 pb-28 sm:px-6 sm:pt-8 sm:pb-10 lg:px-10">
+  <div class="relative z-10 mx-auto w-full max-w-6xl animate-fade-in-up">
+
+    <!-- ===== Header ===== -->
+    <header class="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8">
+      <div>
+        <p class="text-xs font-medium uppercase tracking-widest text-indigo-500">
+          Manage-Your-Money
+        </p>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+          Expenses
+        </h1>
+        <p class="mt-1.5 text-sm text-slate-500 sm:text-base">
+          Every expense, all in one place.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        (click)="goToNewExpense()"
+        class="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/40 active:translate-y-0 active:scale-[0.98]"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+             stroke-width="2" stroke="currentColor" class="h-4 w-4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        <span>New expense</span>
+      </button>
+    </header>
+
+    <!-- ===== Server total summary ===== -->
+    <div
+      class="relative mb-5 overflow-hidden rounded-2xl border border-white/60 bg-gradient-to-br from-white/90 to-indigo-50/70 p-5 shadow-lg shadow-indigo-500/10 backdrop-blur-xl sm:p-6"
+    >
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <span
+              class="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white shadow-md shadow-indigo-500/30"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                   stroke-width="1.8" stroke="currentColor" class="h-4 w-4">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+              </svg>
+            </span>
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-slate-500">
+              {{ totalLabel() }}
+            </p>
+          </div>
+
+          <div class="mt-2 flex items-baseline gap-2">
+            @if (isLoadingTotal() && serverTotal() == null) {
+              <div class="h-8 w-40 animate-pulse rounded-md bg-slate-200/70 sm:h-9"></div>
+            } @else if (serverTotal() != null) {
+              <p class="text-2xl font-bold tabular-nums tracking-tight text-slate-900 sm:text-3xl">
+                {{ formatCurrency(serverTotal()) }}
+              </p>
+            } @else {
+              <p class="text-2xl font-bold tracking-tight text-slate-300 sm:text-3xl">₹—</p>
+            }
+
+            @if (isLoadingTotal() && serverTotal() != null) {
+              <svg class="h-3.5 w-3.5 animate-spin text-slate-400" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25" stroke-width="4" />
+                <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
+              </svg>
+            }
+          </div>
+
+          @if (serverCount() != null) {
+            <p class="mt-1 text-xs text-slate-500">
+              across
+              <span class="font-semibold text-slate-700">{{ formatCount(serverCount()) }}</span>
+              expense{{ serverCount() === 1 ? '' : 's' }}
+            </p>
+          }
+        </div>
+
+        @if (activeCategoryName(); as catName) {
+          <span
+            class="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-white/80 px-3 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm backdrop-blur"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-indigo-500"></span>
+            {{ catName }}
+            <button
+              type="button"
+              (click)="onCategoryChange('')"
+              class="rounded-full p-0.5 transition-colors hover:bg-indigo-100"
+              aria-label="Clear category filter"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                   stroke-width="2.5" stroke="currentColor" class="h-3 w-3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </span>
+        }
+      </div>
+
+      <span class="pointer-events-none absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-indigo-500 opacity-70"></span>
+    </div>
+
+    <!-- ===== Filter bar ===== -->
+    <div class="mb-5 rounded-2xl border border-white/60 bg-white/70 shadow-lg shadow-indigo-500/5 backdrop-blur-xl">
+
+      <!-- Always-visible row: search + category + advanced toggle -->
+      <div class="grid grid-cols-1 gap-3 p-4 sm:grid-cols-12 sm:p-5">
+        <div class="relative sm:col-span-6">
+          <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke-width="1.8" stroke="currentColor" class="h-4 w-4">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+          </span>
+          <input
+            type="text"
+            [ngModel]="searchTerm()"
+            (ngModelChange)="onSearchInput($event)"
+            placeholder="Search by note…"
+            class="w-full rounded-xl border border-slate-200 bg-white/80 py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+          />
+        </div>
+
+        <div class="relative sm:col-span-4">
+          <select
+            [ngModel]="selectedCategoryId() ?? ''"
+            (ngModelChange)="onCategoryChange($event)"
+            class="w-full cursor-pointer appearance-none rounded-xl border border-slate-200 bg-white/80 py-2.5 pl-3 pr-9 text-sm font-medium text-slate-700 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+          >
+            <option value="">All categories</option>
+            @for (cat of categories(); track cat.id) {
+              <option [value]="cat.id">{{ cat.name }}</option>
+            }
+          </select>
+          <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke-width="2" stroke="currentColor" class="h-4 w-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+            </svg>
+          </span>
+        </div>
+
+        <button
+          type="button"
+          (click)="toggleAdvanced()"
+          [attr.aria-expanded]="advancedOpen()"
+          class="relative inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white/80 px-3.5 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-900 hover:shadow-md sm:col-span-2"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               stroke-width="1.8" stroke="currentColor" class="h-4 w-4">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
+          </svg>
+          <span>Filters</span>
+          @if (activeFilterCount() > 0) {
+            <span class="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-indigo-500 px-1 text-[10px] font-bold text-white">
+              {{ activeFilterCount() }}
+            </span>
+          }
+        </button>
+      </div>
+
+      <!-- Advanced filter panel -->
+      @if (advancedOpen()) {
+        <div class="border-t border-slate-200/70 p-4 sm:p-5 space-y-4 animate-fade-in">
+
+          <!-- Payment methods -->
+          <div>
+            <p class="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+              Payment method
+            </p>
+            @if (availablePaymentMethods().length === 0) {
+              <p class="text-xs italic text-slate-400">No payment methods recorded yet.</p>
+            } @else {
+              <div class="flex flex-wrap gap-2">
+                @for (m of availablePaymentMethods(); track m) {
+                  <button
+                    type="button"
+                    (click)="togglePaymentFilter(m)"
+                    [class]="'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all duration-200 active:scale-95 ' +
+                      (isPaymentSelected(m)
+                        ? (methodColorClasses(m) + ' ring-2 ring-indigo-500/20')
+                        : 'border-slate-200 bg-white/60 text-slate-500 hover:border-slate-300 hover:text-slate-700')"
+                  >
+                    {{ methodLabel(m) }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Amount filter -->
+          <div>
+            <p class="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+              Amount
+            </p>
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-12">
+              <div class="relative sm:col-span-4">
+                <select
+                  [ngModel]="amountOperator() ?? ''"
+                  (ngModelChange)="onAmountOperatorChange($event)"
+                  class="w-full cursor-pointer appearance-none rounded-xl border border-slate-200 bg-white/80 py-2.5 pl-3 pr-9 text-sm font-medium text-slate-700 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                >
+                  <option value="">Any amount</option>
+                  @for (op of amountOperators; track op.value) {
+                    <option [value]="op.value">{{ op.label }}</option>
+                  }
+                </select>
+                <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                       stroke-width="2" stroke="currentColor" class="h-4 w-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                  </svg>
+                </span>
+              </div>
+
+              @if (amountOperator()) {
+                <div class="relative sm:col-span-4">
+                  <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    inputmode="decimal"
+                    step="0.01"
+                    min="0"
+                    [ngModel]="amount() ?? ''"
+                    (ngModelChange)="onAmountInput($event)"
+                    placeholder="0.00"
+                    class="w-full rounded-xl border border-slate-200 bg-white/80 py-2.5 pl-8 pr-3 text-sm font-semibold text-slate-900 placeholder-slate-400 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                  />
+                </div>
+
+                @if (showAmountTo()) {
+                  <div class="relative sm:col-span-4">
+                    <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">
+                      ₹
+                    </span>
+                    <input
+                      type="number"
+                      inputmode="decimal"
+                      step="0.01"
+                      min="0"
+                      [ngModel]="amountTo() ?? ''"
+                      (ngModelChange)="onAmountToInput($event)"
+                      placeholder="Upper bound"
+                      class="w-full rounded-xl border border-slate-200 bg-white/80 py-2.5 pl-8 pr-3 text-sm font-semibold text-slate-900 placeholder-slate-400 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                    />
+                  </div>
+                }
+              }
+            </div>
+          </div>
+
+          <!-- Date range -->
+          <div>
+            <p class="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+              Date range
+            </p>
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-12">
+              <div class="relative sm:col-span-4">
+                <select
+                  [ngModel]="dateRangePreset()"
+                  (ngModelChange)="onDateRangePresetChange($event)"
+                  class="w-full cursor-pointer appearance-none rounded-xl border border-slate-200 bg-white/80 py-2.5 pl-3 pr-9 text-sm font-medium text-slate-700 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                >
+                  @for (p of dateRangePresets; track p.value) {
+                    <option [value]="p.value">{{ p.label }}</option>
+                  }
+                </select>
+                <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                       stroke-width="2" stroke="currentColor" class="h-4 w-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                  </svg>
+                </span>
+              </div>
+
+              @if (showCustomRange()) {
+                <div class="sm:col-span-4">
+                  <input
+                    type="datetime-local"
+                    [ngModel]="createdFrom()"
+                    (ngModelChange)="onCreatedFromChange($event)"
+                    placeholder="From"
+                    class="w-full rounded-xl border border-slate-200 bg-white/80 px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                  />
+                </div>
+                <div class="sm:col-span-4">
+                  <input
+                    type="datetime-local"
+                    [ngModel]="createdTo()"
+                    (ngModelChange)="onCreatedToChange($event)"
+                    placeholder="To"
+                    class="w-full rounded-xl border border-slate-200 bg-white/80 px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                  />
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Clear -->
+          @if (hasAnyFilter()) {
+            <div class="flex justify-end border-t border-slate-200/70 pt-3">
+              <button
+                type="button"
+                (click)="clearAllFilters()"
+                class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 transition-colors hover:text-indigo-500"
+              >
+                Clear all filters
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                     stroke-width="2" stroke="currentColor" class="h-3.5 w-3.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- ===== Loading ===== -->
+    @if (isLoading()) {
+      <div class="space-y-3">
+        @for (i of [1,2,3,4,5]; track i) {
+          <div class="flex items-center gap-4 rounded-2xl border border-white/60 bg-white/70 p-4 shadow-lg shadow-indigo-500/5 backdrop-blur-xl animate-pulse">
+            <div class="h-12 w-12 shrink-0 rounded-xl bg-slate-200/70"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-4 w-40 rounded-md bg-slate-200/70"></div>
+              <div class="h-3 w-24 rounded-md bg-slate-200/70"></div>
+            </div>
+            <div class="h-6 w-24 rounded-md bg-slate-200/70"></div>
+          </div>
+        }
+      </div>
+    }
+    @else if (errorMessage()) {
+      <div role="alert"
+           class="flex flex-col items-center justify-center gap-3 rounded-2xl border border-red-200 bg-red-50/70 p-8 text-center backdrop-blur-xl animate-fade-in">
+        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               stroke-width="1.8" stroke="currentColor" class="h-6 w-6">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+          </svg>
+        </div>
+        <p class="text-sm font-medium text-red-700">{{ errorMessage() }}</p>
+        <button
+          type="button"
+          (click)="reload()"
+          class="mt-1 inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-white/80 px-3.5 py-2 text-xs font-semibold text-red-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+        >
+          Retry
+        </button>
+      </div>
+    }
+    @else if (expenses().length === 0) {
+      <div class="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-slate-300/70 bg-white/50 p-10 text-center backdrop-blur-sm animate-fade-in">
+        <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white shadow-lg shadow-indigo-500/30 animate-pop-in">
+          @if (hasAnyFilter()) {
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke-width="1.8" stroke="currentColor" class="h-6 w-6">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke-width="1.8" stroke="currentColor" class="h-6 w-6">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+          }
+        </div>
+        <div>
+          <p class="text-base font-semibold text-slate-800">
+            {{ hasAnyFilter() ? 'No expenses match your filters' : 'No expenses yet' }}
+          </p>
+          <p class="mt-1 text-sm text-slate-500">
+            {{ hasAnyFilter()
+            ? 'Try loosening the filters or clear them to see everything.'
+            : 'Log your first expense to see it here.' }}
+          </p>
+        </div>
+        @if (hasAnyFilter()) {
+          <button
+            type="button"
+            (click)="clearAllFilters()"
+            class="mt-1 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white/80 px-4 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-900 hover:shadow-md"
+          >
+            Clear filters
+          </button>
+        } @else {
+          <button
+            type="button"
+            (click)="goToNewExpense()"
+            class="mt-1 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke-width="2" stroke="currentColor" class="h-4 w-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Add expense
+          </button>
+        }
+      </div>
+    }
+    @else {
+      <ul class="space-y-3">
+        @for (expense of expenses(); track expense.id) {
+          <li
+            class="group relative rounded-2xl border border-white/60 bg-white/80 shadow-lg shadow-indigo-500/5 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10 animate-fade-in"
+            [class.!z-30]="openMenuId() === expense.id"
+          >
+            <div class="flex flex-col gap-3 p-4 sm:p-5">
+              <div class="flex items-start gap-3 sm:gap-4">
+
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-100 via-slate-50 to-fuchsia-100 text-indigo-500 shadow-sm sm:h-12 sm:w-12">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                       stroke-width="1.6" stroke="currentColor" class="h-5 w-5 sm:h-6 sm:w-6">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
+                  </svg>
+                </div>
+
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-semibold text-slate-900 sm:text-base">
+                    {{ expense.spentOn || expense.categoryName || 'Untitled expense' }}
+                  </p>
+                  <div class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-slate-500">
+                    @if (expense.categoryName) {
+                      <span class="truncate">{{ expense.categoryName }}</span>
+                      <span class="text-slate-300">·</span>
+                    }
+                    <span>{{ formatDate(expense.created) }}</span>
+                  </div>
+                </div>
+
+                <div class="shrink-0 text-right">
+                  <p class="text-base font-bold tabular-nums tracking-tight text-slate-900 sm:text-lg">
+                    {{ formatCurrency(expense.amount) }}
+                  </p>
+                  @if (!expense.synced) {
+                    <span class="mt-1 inline-flex items-center gap-1 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-700">
+                      Pending
+                    </span>
+                  }
+                </div>
+
+                <div class="relative shrink-0" data-card-menu>
+                  <button
+                    type="button"
+                    (click)="toggleMenu(expense.id, $event)"
+                    [attr.aria-expanded]="openMenuId() === expense.id"
+                    aria-haspopup="menu"
+                    aria-label="More actions"
+                    class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all duration-200 hover:bg-slate-100 hover:text-slate-700 active:scale-95"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                         stroke-width="2" stroke="currentColor" class="h-4 w-4">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                    </svg>
+                  </button>
+
+                  @if (openMenuId() === expense.id) {
+                    <div
+                      role="menu"
+                      class="absolute right-0 top-full z-30 mt-1.5 w-40 origin-top-right overflow-hidden rounded-xl border border-white/60 bg-white/95 p-1.5 shadow-xl shadow-slate-900/10 backdrop-blur-xl animate-menu-in"
+                      (click)="$event.stopPropagation()"
+                    >
+                      <a
+                        role="menuitem"
+                        [routerLink]="['/expenses', expense.id, 'edit']"
+                        [queryParams]="selectedCategoryId() != null ? { categoryId: selectedCategoryId() } : {}"
+                        (click)="openMenuId.set(null)"
+                        class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-100"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                             stroke-width="1.8" stroke="currentColor" class="h-4 w-4 text-slate-500">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                        </svg>
+                        Edit
+                      </a>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        (click)="requestDelete(expense, $event)"
+                        class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 transition-colors duration-150 hover:bg-red-50"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                             stroke-width="1.8" stroke="currentColor" class="h-4 w-4">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                        </svg>
+                        Delete
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              @if (expense.paymentMethods?.length) {
+                <div class="flex flex-wrap items-center gap-1.5 pl-14 sm:pl-16">
+                  @for (m of expense.paymentMethods; track m) {
+                    <span [class]="pillClassFor(m)">
+                      <span class="h-1.5 w-1.5 rounded-full bg-current opacity-70"></span>
+                      {{ methodLabel(m) }}
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+          </li>
+        }
+
+        <!-- Infinite-scroll sentinel -->
+        <li #sentinel class="h-12 w-full" aria-hidden="true"></li>
+      </ul>
+
+      @if (isLoadingMore()) {
+        <div class="mt-4 flex items-center justify-center gap-2 text-xs font-medium text-slate-500">
+          <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25" stroke-width="4" />
+            <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
+          </svg>
+          Loading more…
+        </div>
+      }
+
+      @if (!hasMore() && expenses().length > 0) {
+        <p class="mt-6 text-center text-[11px] uppercase tracking-widest text-slate-400">
+          End of list
+        </p>
+      }
+    }
+  </div>
+
+  @if (deleteTarget()) {
+    <app-confirm-dialog
+      title="Delete expense"
+      [message]="deleteMessage()"
+      confirmText="Delete"
+      cancelText="Cancel"
+      variant="danger"
+      [isLoading]="deleteLoading()"
+      (confirmed)="onConfirmDelete()"
+      (cancelled)="cancelDelete()"
+    />
+  }
+</section>

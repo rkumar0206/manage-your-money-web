@@ -1,0 +1,23 @@
+<app-dashboard-card
+  title="Day-of-week habit"
+  [subtitle]="'When you tend to spend · ' + presetLabel()"
+  [loading]="isLoading() && !data()"
+  [error]="errorMessage()"
+  [isEmpty]="
+        !isLoading() && !errorMessage() && (!data() || data()!.days.every((d) => !d.amount))
+      "
+  emptyMessage="No expenses recorded in this period."
+  minHeight="320px"
+  (retry)="reload()"
+>
+  <div class="relative h-64 w-full">
+    @if (data()) {
+      <canvas
+        baseChart
+        [data]="chartData()"
+        [options]="chartOptions"
+        [type]="chartType"
+      ></canvas>
+    }
+  </div>
+</app-dashboard-card>

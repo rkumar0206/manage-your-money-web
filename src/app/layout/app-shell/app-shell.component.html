@@ -1,0 +1,22 @@
+<div class="flex min-h-[100dvh] w-full bg-gradient-to-br from-slate-50 via-white to-indigo-50">
+  <!-- Sidebar (desktop only) -->
+  <app-sidebar
+    [collapsed]="sidebarCollapsed()"
+    (toggleCollapsed)="toggleSidebar()"
+  ></app-sidebar>
+
+  <!-- Main column -->
+  <div class="flex min-h-[100dvh] min-w-0 flex-1 flex-col">
+    <app-topbar
+      [sidebarCollapsed]="sidebarCollapsed()"
+      (toggleSidebar)="toggleSidebar()"
+    ></app-topbar>
+
+    <main class="flex-1 pb-28 md:pb-6">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <!-- Bottom nav (mobile only) -->
+  <app-bottom-nav></app-bottom-nav>
+</div>

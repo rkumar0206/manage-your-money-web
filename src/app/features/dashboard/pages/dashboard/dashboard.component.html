@@ -1,0 +1,151 @@
+<section class="relative min-h-full w-full px-4 pt-6 pb-28 sm:px-6 sm:pt-8 sm:pb-10 lg:px-10">
+  <div class="relative z-10 mx-auto w-full max-w-7xl animate-fade-in-up">
+
+    <!-- Header -->
+    <header class="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8">
+      <div>
+        <p class="text-xs font-medium uppercase tracking-widest text-indigo-500">
+          Manage-Your-Money
+        </p>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+          Dashboard
+        </h1>
+        <p class="mt-1.5 text-sm text-slate-500 sm:text-base">
+          Your financial picture at a glance.
+        </p>
+      </div>
+    </header>
+
+    <!-- Global filter bar -->
+    <div class="mb-6 rounded-2xl border border-white/60 bg-white/70 p-4 shadow-lg shadow-indigo-500/5 backdrop-blur-xl sm:p-5">
+      <div class="flex flex-wrap items-center gap-3">
+
+        <!-- Date range -->
+        <div class="relative">
+          <select
+            [ngModel]="dateRangePreset()"
+            (ngModelChange)="onDateRangeChange($event)"
+            aria-label="Date range"
+            class="cursor-pointer appearance-none rounded-xl border border-slate-200 bg-white/80 py-2 pl-3 pr-8 text-xs font-semibold text-slate-700 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+          >
+            @for (p of presets; track p.value) {
+              <option [value]="p.value">{{ p.label }}</option>
+            }
+          </select>
+          <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke-width="2" stroke="currentColor" class="h-3.5 w-3.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+            </svg>
+          </span>
+        </div>
+
+        <!-- Year -->
+        <div class="relative">
+          <select
+            [ngModel]="selectedYear()"
+            (ngModelChange)="onYearChange($event)"
+            aria-label="Year"
+            class="cursor-pointer appearance-none rounded-xl border border-slate-200 bg-white/80 py-2 pl-3 pr-8 text-xs font-semibold text-slate-700 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+          >
+            @for (y of availableYears(); track y) {
+              <option [value]="y">{{ y }}</option>
+            }
+          </select>
+          <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke-width="2" stroke="currentColor" class="h-3.5 w-3.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+            </svg>
+          </span>
+        </div>
+
+        <!-- Payment methods -->
+        @if (!isLoadingMethods() && availablePaymentMethods().length > 0) {
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span class="mr-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+              Payment
+            </span>
+            @for (m of availablePaymentMethods(); track m) {
+              <button
+                type="button"
+                (click)="togglePaymentMethod(m)"
+                [class]="'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all duration-200 active:scale-95 ' +
+                  (isPaymentSelected(m)
+                    ? 'border-indigo-200 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-500/20'
+                    : 'border-slate-200 bg-white/60 text-slate-500 hover:border-slate-300 hover:text-slate-700')"
+              >
+                {{ methodLabel(m) }}
+              </button>
+            }
+            @if (selectedPaymentMethods().length > 0) {
+              <button
+                type="button"
+                (click)="clearPaymentMethods()"
+                class="ml-1 text-[11px] font-semibold text-indigo-600 transition-colors hover:text-indigo-500"
+              >
+                Clear
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Widgets -->
+    <div class="space-y-4 sm:space-y-5">
+
+      <!-- KPI row -->
+      <app-kpi-row
+        [dateRangePreset]="dateRangePreset()"
+        [presetLabel]="presetLabel()"
+      />
+
+      <!-- Row 2: Monthly trend + Category breakdown -->
+      <div class="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12">
+        <div class="lg:col-span-8">
+          <app-monthly-trend
+            [year]="selectedYear()"
+            [paymentMethods]="selectedPaymentMethods()"
+          />
+        </div>
+        <div class="lg:col-span-4">
+          <app-category-breakdown
+            [dateRangePreset]="dateRangePreset()"
+            [presetLabel]="presetLabel()"
+            [topN]="6"
+          />
+        </div>
+      </div>
+
+      <!-- Row 3: Payment methods + Day of week + Top vendors -->
+      <div class="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12">
+        <div class="lg:col-span-4">
+          <app-payment-methods
+            [dateRangePreset]="dateRangePreset()"
+            [presetLabel]="presetLabel()"
+          />
+        </div>
+        <div class="lg:col-span-4">
+          <app-day-of-week
+            [dateRangePreset]="dateRangePreset()"
+            [presetLabel]="presetLabel()"
+          />
+        </div>
+        <div class="lg:col-span-4">
+          <app-top-vendors
+            [dateRangePreset]="dateRangePreset()"
+            [presetLabel]="presetLabel()"
+            [limit]="5"
+          />
+        </div>
+      </div>
+
+      <!-- Row 4: Heatmap -->
+      <app-daily-heatmap [year]="selectedYear()" />
+
+      <!-- Row 5: Recent activity -->
+      <app-recent-expenses />
+    </div>
+  </div>
+</section>

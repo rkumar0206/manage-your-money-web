@@ -1,0 +1,21 @@
+<app-dashboard-card
+  title="Monthly spending"
+  [subtitle]="'Totals per month for ' + year()"
+  [loading]="isLoading() && !data()"
+  [error]="errorMessage()"
+  [isEmpty]="!isLoading() && !errorMessage() && (!data() || data()!.months.length === 0)"
+  emptyMessage="No expenses recorded for this year."
+  minHeight="320px"
+  (retry)="reload()"
+>
+  <div class="relative h-64 w-full sm:h-72">
+    @if (data()) {
+      <canvas
+        baseChart
+        [data]="chartData()"
+        [options]="chartOptions"
+        [type]="chartType"
+      ></canvas>
+    }
+  </div>
+</app-dashboard-card>

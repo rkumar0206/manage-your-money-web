@@ -1,0 +1,49 @@
+:host {
+  display: block;
+}
+
+@keyframes auth-fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes auth-fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes auth-pop-in {
+  0%   { opacity: 0; transform: scale(0.8); }
+  60%  { opacity: 1; transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+@keyframes auth-shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(6px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(4px); }
+}
+@keyframes auth-float-slow {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(24px, -24px) scale(1.08); }
+}
+@keyframes auth-float-slower {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(-24px, 24px) scale(1.08); }
+}
+
+.animate-fade-in-up   { animation: auth-fade-in-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-fade-in      { animation: auth-fade-in 0.3s ease-out both; }
+.animate-pop-in       { animation: auth-pop-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-shake        { animation: auth-shake 0.4s ease-in-out; }
+.animate-float-slow   { animation: auth-float-slow 14s ease-in-out infinite; }
+.animate-float-slower { animation: auth-float-slower 18s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

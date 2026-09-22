@@ -1,0 +1,40 @@
+<app-dashboard-card
+  title="Category breakdown"
+  [subtitle]="'Top categories · ' + presetLabel()"
+  [loading]="isLoading() && !data()"
+  [error]="errorMessage()"
+  [isEmpty]="!isLoading() && !errorMessage() && (!data() || data()!.categories.length === 0)"
+  emptyMessage="No categories with spend in this period."
+  minHeight="320px"
+  (retry)="reload()"
+>
+  <div class="relative h-56 w-full">
+    @if (data()) {
+      <canvas
+        baseChart
+        [data]="chartData()"
+        [options]="chartOptions"
+        [type]="chartType"
+      ></canvas>
+    }
+  </div>
+
+  @if (data() && data()!.categories.length > 0) {
+    <ul class="mt-4 space-y-1.5">
+      @for (item of data()!.categories; track item.categoryId; let i = $index) {
+        <li class="flex items-center justify-between gap-3 text-xs">
+              <span class="flex min-w-0 items-center gap-2">
+                <span
+                  class="h-2.5 w-2.5 shrink-0 rounded-full"
+                  [style.background]="palette[i % palette.length]"
+                ></span>
+                <span class="truncate text-slate-700">{{ item.categoryName }}</span>
+              </span>
+          <span class="shrink-0 font-semibold tabular-nums text-slate-900">
+                {{ formatCurrency(item.amount) }}
+              </span>
+        </li>
+      }
+    </ul>
+  }
+</app-dashboard-card>

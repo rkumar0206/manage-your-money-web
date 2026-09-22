@@ -1,0 +1,37 @@
+<nav
+  class="fixed inset-x-0 bottom-0 z-40 border-t border-white/60 bg-white/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl animate-slide-up md:hidden"
+  aria-label="Primary"
+>
+  <ul
+    class="mx-auto grid max-w-lg px-2"
+    [style.grid-template-columns]="'repeat(' + items().length + ', minmax(0, 1fr))'"
+  >
+    @for (item of items(); track item.route) {
+      <li>
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="!text-indigo-600"
+          #rla="routerLinkActive"
+          class="group relative flex flex-col items-center gap-1 rounded-xl px-2 py-2.5 text-[11px] font-medium text-slate-500 transition-colors duration-200"
+        >
+          <span
+            class="flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 group-active:scale-90"
+            [class.bg-gradient-to-br]="rla.isActive"
+            [class.from-indigo-500]="rla.isActive"
+            [class.to-fuchsia-500]="rla.isActive"
+            [class.text-white]="rla.isActive"
+            [class.shadow-md]="rla.isActive"
+            [class.shadow-indigo-500-30]="rla.isActive"
+          [class.group-hover:bg-slate-100]="!rla.isActive"
+          >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               stroke-width="1.8" stroke="currentColor" class="h-5 w-5">
+            <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.iconPath" />
+          </svg>
+          </span>
+          <span class="truncate">{{ item.label }}</span>
+        </a>
+      </li>
+    }
+  </ul>
+</nav>

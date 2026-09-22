@@ -1,0 +1,21 @@
+<app-dashboard-card
+  title="Top vendors"
+  [subtitle]="'Where your money went · ' + presetLabel()"
+  [loading]="isLoading() && !data()"
+  [error]="errorMessage()"
+  [isEmpty]="!isLoading() && !errorMessage() && (!data() || data()!.vendors.length === 0)"
+  emptyMessage="No vendors recorded in this period."
+  minHeight="320px"
+  (retry)="reload()"
+>
+  <div class="relative h-64 w-full">
+    @if (data()) {
+      <canvas
+        baseChart
+        [data]="chartData()"
+        [options]="chartOptions"
+        [type]="chartType"
+      ></canvas>
+    }
+  </div>
+</app-dashboard-card>

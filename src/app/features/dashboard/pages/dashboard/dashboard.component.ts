@@ -108,7 +108,7 @@ export class DashboardComponent {
       .distinctPaymentMethods()
       .pipe(finalize(() => this.isLoadingMethods.set(false)))
       .subscribe({
-        next: (methods) => this.availablePaymentMethods.set(methods ?? []),
+        next: (methods) => this.availablePaymentMethods.set(methods.methods ?? []),
         error: () => {
           /* silent */
         },

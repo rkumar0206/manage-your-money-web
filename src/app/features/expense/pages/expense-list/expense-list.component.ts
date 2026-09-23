@@ -327,7 +327,7 @@ export class ExpenseListComponent {
 
   private loadPaymentMethods(): void {
     this.expenseService.distinctPaymentMethods().subscribe({
-      next: (methods) => this.availablePaymentMethods.set(methods ?? []),
+      next: (methods) => this.availablePaymentMethods.set(methods.methods ?? []),
       error: () => {
         /* silent */
       },

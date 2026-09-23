@@ -47,11 +47,11 @@
       aria-haspopup="menu"
       [attr.aria-expanded]="menuOpen()"
     >
-      <span
-        class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-xs font-semibold text-white shadow-md shadow-indigo-500/30"
-      >
-        MY
-      </span>
+    <span
+      class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-xs font-semibold text-white shadow-md shadow-indigo-500/30"
+    >
+      {{ initials() }}
+    </span>
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
            stroke-width="2" stroke="currentColor"
            class="h-4 w-4 text-slate-400 transition-transform duration-200"
@@ -63,13 +63,29 @@
     @if (menuOpen()) {
       <div
         role="menu"
-        class="absolute right-0 top-full mt-2 w-56 origin-top-right overflow-hidden rounded-2xl border border-white/60 bg-white/80 p-1.5 shadow-xl shadow-indigo-500/10 backdrop-blur-xl animate-menu-in"
+        class="absolute right-0 top-full mt-2 w-64 origin-top-right overflow-hidden rounded-2xl border border-white/60 bg-white/80 p-1.5 shadow-xl shadow-indigo-500/10 backdrop-blur-xl animate-menu-in"
       >
-        <div class="px-3 py-2">
-          <p class="text-sm font-semibold text-slate-900">Signed in</p>
-          <p class="truncate text-xs text-slate-500">Welcome back</p>
+        <!-- User identity -->
+        <div class="flex items-center gap-3 px-3 py-2.5">
+        <span
+          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-sm font-semibold text-white shadow-md shadow-indigo-500/30"
+        >
+          {{ initials() }}
+        </span>
+          <div class="min-w-0">
+            <p class="truncate text-sm font-semibold text-slate-900">
+              {{ displayName() }}
+            </p>
+            @if (user()?.email) {
+              <p class="truncate text-xs text-slate-500">{{ user()!.email }}</p>
+            } @else {
+              <p class="truncate text-xs text-slate-400">Loading…</p>
+            }
+          </div>
         </div>
+
         <div class="my-1 h-px bg-slate-200/70"></div>
+
         <button
           type="button"
           role="menuitem"

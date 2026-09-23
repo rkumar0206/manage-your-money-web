@@ -178,7 +178,7 @@ export class ExpenseFormComponent {
 
   private loadDistinctMethods(): void {
     this.expenseService.distinctPaymentMethods().subscribe({
-      next: (methods) => this.historyMethods.set(methods ?? []),
+      next: (methods) => this.historyMethods.set(methods.methods ?? []),
       error: () => {
         /* non-critical */
       },

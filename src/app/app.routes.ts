@@ -38,6 +38,18 @@ export const routes: Routes = [
       // { path: 'settings',   loadComponent: () => ... },
 
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: 'data',
+        loadComponent: () =>
+          import('./features/data-transfer/pages/data-transfer/data-transfer.component').then(
+            (m) => m.DataTransferComponent,
+          ),
+      },
+      {
+        path: 'settings',
+        loadChildren: () =>
+          import('./features/settings/settings.routes').then((m) => m.settingsRoutes),
+      },
     ],
   },
 

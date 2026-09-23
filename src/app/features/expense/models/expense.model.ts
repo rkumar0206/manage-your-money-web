@@ -11,6 +11,10 @@ export interface Expense {
   modified: string;
 }
 
+export interface PaymentMethodResponse {
+  methods?: string[];
+}
+
 export interface ExpenseCreateRequest {
   spentOn?: string | null;
   amount: number;

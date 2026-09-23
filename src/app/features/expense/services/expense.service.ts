@@ -7,6 +7,7 @@ import {
   ExpenseCreateRequest,
   ExpenseSearchRequest,
   ExpenseUpdateRequest,
+  PaymentMethodResponse,
   SpringPage,
 } from '../models/expense.model';
 
@@ -69,8 +70,8 @@ export class ExpenseService {
   // Meta
   // ---------------------------------------------------------------------------
 
-  distinctPaymentMethods(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.baseUrl}/payment-methods`);
+  distinctPaymentMethods(): Observable<PaymentMethodResponse> {
+    return this.http.get<PaymentMethodResponse>(`${this.baseUrl}/payment-methods`);
   }
 
   getTotalAmountSpentByUserId(): Observable<number> {

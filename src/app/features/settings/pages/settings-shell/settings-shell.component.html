@@ -1,0 +1,79 @@
+<section class="relative min-h-full w-full px-4 pt-6 pb-28 sm:px-6 sm:pt-8 sm:pb-10 lg:px-10">
+  <div class="relative z-10 mx-auto w-full max-w-7xl animate-fade-in-up">
+
+    <!-- Header -->
+    <header class="mb-6 sm:mb-8">
+      <p class="text-xs font-medium uppercase tracking-widest text-indigo-500">
+        Manage-Your-Money
+      </p>
+      <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+        Settings
+      </h1>
+      <p class="mt-1.5 text-sm text-slate-500 sm:text-base">
+        Manage your account, preferences and data.
+      </p>
+    </header>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+
+      <!-- ============ Nav: mobile (horizontal tabs) ============ -->
+      <nav class="lg:hidden">
+        <ul class="flex overflow-x-auto gap-2 pb-1">
+          @for (s of sections(); track s.id) {
+            <li class="shrink-0">
+              <a
+                [routerLink]="s.route"
+                routerLinkActive="!border-indigo-300 !bg-white !text-indigo-700 !shadow-md"
+                class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3.5 py-2 text-xs font-semibold text-slate-600 shadow-sm backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-900"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                     stroke-width="1.8" stroke="currentColor" class="h-4 w-4">
+                  <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="s.iconPath" />
+                </svg>
+                {{ s.label }}
+              </a>
+            </li>
+          }
+        </ul>
+      </nav>
+
+      <!-- ============ Nav: desktop (vertical list) ============ -->
+      <aside class="hidden lg:col-span-3 lg:block">
+        <nav
+          class="sticky top-20 rounded-2xl border border-white/60 bg-white/70 p-2 shadow-lg shadow-indigo-500/5 backdrop-blur-xl"
+          aria-label="Settings sections"
+        >
+          <ul class="space-y-1">
+            @for (s of sections(); track s.id) {
+              <li>
+                <a
+                  [routerLink]="s.route"
+                  routerLinkActive="!bg-gradient-to-r !from-indigo-500 !to-fuchsia-500 !text-white !shadow-md !shadow-indigo-500/30"
+                  class="group flex items-start gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-slate-100/70 hover:text-slate-900"
+                >
+                  <span class="mt-0.5 shrink-0 transition-transform duration-200 group-hover:scale-110">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                         stroke-width="1.8" stroke="currentColor" class="h-4.5 w-4.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="s.iconPath" />
+                    </svg>
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block truncate">{{ s.label }}</span>
+                    <span class="mt-0.5 block text-[11px] font-normal leading-snug opacity-80">
+                      {{ s.description }}
+                    </span>
+                  </span>
+                </a>
+              </li>
+            }
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- ============ Section content ============ -->
+      <div class="lg:col-span-9">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+  </div>
+</section>

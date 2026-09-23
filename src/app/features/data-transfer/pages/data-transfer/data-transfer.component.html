@@ -1,0 +1,32 @@
+<section class="relative min-h-full w-full px-4 pt-6 pb-28 sm:px-6 sm:pt-8 sm:pb-10 lg:px-10">
+  <div class="relative z-10 mx-auto w-full max-w-5xl animate-fade-in-up">
+
+    <a
+      routerLink="/dashboard"
+      class="mb-4 inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition-colors hover:text-indigo-600"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+           stroke-width="2" stroke="currentColor" class="h-3.5 w-3.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+      </svg>
+      Back to dashboard
+    </a>
+
+    <header class="mb-6 sm:mb-8">
+      <p class="text-xs font-medium uppercase tracking-widest text-indigo-500">
+        Manage-Your-Money
+      </p>
+      <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+        Data &amp; backup
+      </h1>
+      <p class="mt-1.5 text-sm text-slate-500 sm:text-base">
+        Take your data with you, or restore from a previous export.
+      </p>
+    </header>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <app-data-export />
+      <app-data-import />
+    </div>
+  </div>
+</section>

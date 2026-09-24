@@ -7,7 +7,7 @@ app:
   image:
     repository: ghcr.io/rkumar0206/mym-web
     tag: "" # Overridden dynamically in GitHub Actions
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     containerPort: 80
 
     existingSecret: mym-secret

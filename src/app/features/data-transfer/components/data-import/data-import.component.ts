@@ -4,12 +4,13 @@ import { finalize } from 'rxjs';
 import { DataTransferService } from '../../services/data-transfer.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
-const ACCEPTED_EXTENSIONS = ['.json', '.zip'];
+const ACCEPTED_EXTENSIONS = ['.json.gz', '.gz'];
 const ACCEPTED_MIME_TYPES = new Set([
-  'application/json',
-  'application/zip',
-  'application/x-zip-compressed',
-  'multipart/x-zip',
+  'application/gzip',
+  'application/x-gzip',
+  'application/x-gunzip',
+  'application/gzipped',
+  '', // Needed because OS/browsers often report file.type as "" for .json.gz
 ]);
 const MAX_BYTES = 50 * 1024 * 1024; // 50 MB
 

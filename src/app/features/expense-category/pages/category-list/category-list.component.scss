@@ -41,3 +41,11 @@
 }
 
 .animate-menu-in { animation: cat-menu-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+.category-card {
+  content-visibility: auto;
+  /* Height first, width second. `auto` remembers the last rendered height
+     per card, so once a card is painted the browser uses its real size;
+     before that it uses 380px as a placeholder to keep scroll stable. */
+  contain-intrinsic-size: auto 380px;
+}

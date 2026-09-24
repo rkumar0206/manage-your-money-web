@@ -2,13 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
-  ElementRef,
   HostListener,
   computed,
   inject,
   input,
   signal,
-  viewChild,
   effect,
   untracked,
 } from '@angular/core';
@@ -33,11 +31,14 @@ import {
   CategoryName,
 } from '../../../expense-category/models/expense-category.model';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import {
+  ScrollingModule,
+} from '@angular/cdk/scrolling';
 
 @Component({
   selector: 'app-expense-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, RouterLink, ConfirmDialogComponent, ScrollingModule],
   templateUrl: './expense-list.component.html',
   styleUrl: './expense-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -106,9 +107,6 @@ export class ExpenseListComponent {
   // ===========================================================================
   // Infinite scroll
   // ===========================================================================
-
-  private readonly sentinel = viewChild<ElementRef<HTMLDivElement>>('sentinel');
-  private observer: IntersectionObserver | null = null;
 
   // ===========================================================================
   // Derived — filter criteria, active-filter count, labels
@@ -199,6 +197,14 @@ export class ExpenseListComponent {
     return `${label} (${this.formatCurrency(e.amount)}) will be permanently removed. This action cannot be undone.`;
   });
 
+  protected onScrollIndexChange(index: number): void {
+    const total = this.expenses().length;
+    // Trigger a fetch when within 10 items of the end
+    if (total > 0 && index >= total - 10 && this.hasMore() && !this.isLoadingMore()) {
+      this.loadMore();
+    }
+  }
+
   // ===========================================================================
   // Lifecycle
   // ===========================================================================
@@ -230,26 +236,6 @@ export class ExpenseListComponent {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => this.loadFirstPage());
-
-    // Infinite-scroll observer.
-    effect((onCleanup) => {
-      const el = this.sentinel()?.nativeElement;
-      this.observer?.disconnect();
-      this.observer = null;
-      if (!el) return;
-
-      this.observer = new IntersectionObserver(
-        (entries) => {
-          if (entries.some((e) => e.isIntersecting)) this.loadMore();
-        },
-        { rootMargin: '300px 0px' },
-      );
-      this.observer.observe(el);
-
-      onCleanup(() => this.observer?.disconnect());
-    });
-
-    this.destroyRef.onDestroy(() => this.observer?.disconnect());
   }
 
   // ===========================================================================

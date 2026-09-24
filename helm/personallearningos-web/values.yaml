@@ -1,0 +1,34 @@
+namespace: mym-prod
+
+app:
+  name: mym-frontend
+  replicaCount: 1
+
+  image:
+    repository: ghcr.io/rkumar0206/mym-web
+    tag: "" # Overridden dynamically in GitHub Actions
+    pullPolicy: IfNotPresent
+    containerPort: 80
+
+    existingSecret: mym-secret
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+
+  resources:
+    requests:
+      cpu: 20m        # 0.01 vCPU baseline
+      memory: 64Mi    # NGINX needs minimal memory to serve static files
+    limits:
+      cpu: 150m       # Burst capacity for concurrent assets delivery
+      memory: 128Mi   # Hard memory limit
+
+ingress:
+  enabled: true
+  className: "nginx"
+  host: mym.rksdev.tech
+#  tls:
+#    enabled: true
+#    secretName: mym-tls-secret

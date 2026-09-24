@@ -1,0 +1,97 @@
+name: Build and Deploy Frontend
+
+on:
+  push:
+    branches: [ "main" ]
+
+# Grants write permissions to GHCR
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/mym-web
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ------------------------------------------------------------------------
+      # 1. Checkout Source Code
+      # ------------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ------------------------------------------------------------------------
+      # 2. Extract Project Version
+      # ------------------------------------------------------------------------
+      # If version is stored in package.json (Standard Node/React/Vue):
+      - name: Extract Project Version from package.json
+        id: get_version
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          echo "APP_VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted App Version: $VERSION"
+
+      # ------------------------------------------------------------------------
+      # 3. Set up Docker Buildx (Enables layer caching)
+      # ------------------------------------------------------------------------
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # ------------------------------------------------------------------------
+      # 4. Log in to GitHub Container Registry (GHCR)
+      # ------------------------------------------------------------------------
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # ------------------------------------------------------------------------
+      # 5. Build and Push Docker Image
+      # ------------------------------------------------------------------------
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.get_version.outputs.APP_VERSION }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ------------------------------------------------------------------------
+      # 6. Set up Kubernetes Context (Kubeconfig)
+      # ------------------------------------------------------------------------
+      - name: Set up Kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      # ------------------------------------------------------------------------
+      # 7. Set up Helm
+      # ------------------------------------------------------------------------
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      # ------------------------------------------------------------------------
+      # 8. Deploy via Helm
+      # ------------------------------------------------------------------------
+      - name: Deploy via Helm
+        run: |
+          # Ensure namespace exists
+          kubectl create namespace mym-prod --dry-run=client -o yaml | kubectl apply -f -
+
+          # Upgrade or Install Helm Release for Frontend
+          helm upgrade --install mym-frontend ./helm/mym-web \
+            --namespace mym-prod \
+            --set app.image.tag="${{ steps.get_version.outputs.APP_VERSION }}"

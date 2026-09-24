@@ -1,0 +1,6 @@
+apiVersion: v2
+name: mym-web
+version: 0.1.0
+description: Helm chart for Personal Learning OS Frontend (Angular)
+type: application
+appVersion: 1.1.0

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mym-frontend-service
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    app: mym
+    component: mym-frontend
+spec:
+  type: {{ .Values.app.service.type | default "ClusterIP" }}
+  ports:
+    - port: {{ .Values.app.service.port | default 80 }}
+      targetPort: {{ .Values.app.image.containerPort }}
+      protocol: TCP
+      name: http
+  selector:
+    app: mym
+    component: mym-frontend

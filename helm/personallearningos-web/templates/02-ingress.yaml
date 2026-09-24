@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mym-frontend-ingress
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+spec:
+  ingressClassName: {{ .Values.ingress.className | default "nginx" }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host | default "mym.rksdev.tech" }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mym-frontend-service
+                port:
+                  number: {{ .Values.app.service.port | default 80 }}

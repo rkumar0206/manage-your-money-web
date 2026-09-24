@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mym-frontend-deployment
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    app: mym
+    component: mym-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mym
+      component: mym-frontend
+  template:
+    metadata:
+      labels:
+        app: mym
+        component: mym-frontend
+    spec:
+      containers:
+        - name: {{ .Values.app.name }}
+          image: "{{ .Values.app.image.repository }}:{{ .Values.app.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.app.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.app.image.containerPort }}
+          resources:
+            requests:
+              cpu: {{ .Values.app.resources.requests.cpu }}
+              memory: {{ .Values.app.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.app.resources.limits.cpu }}
+              memory: {{ .Values.app.resources.limits.memory }}

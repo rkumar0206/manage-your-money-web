@@ -38,7 +38,7 @@ export interface ExpenseUpdateRequest {
 export type AmountFilterOperator = 'IS_EQUALS_TO' | 'IS_LESS_THAN' | 'IS_GREATER_THAN' | 'IS_BETWEEN';
 
 export type DateRangePreset =
-  'ALL_TIME' | 'TODAY' | 'THIS_WEEK' | 'THIS_MONTH' | 'PREVIOUS_WEEK' | 'PREVIOUS_MONTH' | 'LAST_7_DAYS' | 'LAST_30_DAYS' | 'LAST_365_DAYS' | 'THIS_YEAR' | 'CUSTOM';
+  'ALL_TIME' | 'TODAY' | 'THIS_WEEK' | 'THIS_MONTH' | 'PREVIOUS_WEEK' | 'PREVIOUS_MONTH' | 'LAST_7_DAYS' | 'LAST_30_DAYS' | 'LAST_365_DAYS' | 'THIS_YEAR';
 
 export interface ExpenseSearchRequest {
   spentOn?: string | null;
@@ -84,7 +84,6 @@ export const DATE_RANGE_PRESETS: readonly DatePresetOption[] = [
   { value: 'LAST_30_DAYS', label: 'Last 30 days', allowsCustomRange: false },
   { value: 'LAST_365_DAYS', label: 'Last 365 days', allowsCustomRange: false },
   { value: 'THIS_YEAR', label: 'This year', allowsCustomRange: false },
-  { value: 'CUSTOM', label: 'Custom range', allowsCustomRange: true },
 ];
 
 // ===========================================================================

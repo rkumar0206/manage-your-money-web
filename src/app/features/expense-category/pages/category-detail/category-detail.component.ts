@@ -28,7 +28,7 @@ type MonthlySummary = {
 };
 
 /** Custom range isn't supported on this page — user would need date pickers. */
-const TOTAL_DATE_PRESETS = DATE_RANGE_PRESETS.filter((p) => p.value !== 'CUSTOM');
+const TOTAL_DATE_PRESETS = DATE_RANGE_PRESETS;
 
 const MIN_YEAR = 2018;
 

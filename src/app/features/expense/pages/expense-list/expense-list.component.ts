@@ -177,7 +177,7 @@ export class ExpenseListComponent {
 
   protected readonly showCustomRange = computed(() => {
     const p = this.dateRangePreset();
-    return p === 'ALL_TIME' || p === 'CUSTOM';
+    return p === 'ALL_TIME';
   });
 
   protected readonly deleteMessage = computed(() => {

@@ -15,7 +15,7 @@ import { RecentExpensesComponent } from '../../widgets/recent-expenses/recent-ex
 import { DailyHeatmapComponent } from '../../widgets/daily-heatmap/daily-heatmap.component';
 
 const MIN_YEAR = 2018;
-const DASHBOARD_PRESETS = DATE_RANGE_PRESETS.filter((p) => p.value !== 'CUSTOM');
+const DASHBOARD_PRESETS = DATE_RANGE_PRESETS;
 
 @Component({
   selector: 'app-dashboard',

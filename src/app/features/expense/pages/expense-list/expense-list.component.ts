@@ -34,11 +34,14 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
 import {
   ScrollingModule,
 } from '@angular/cdk/scrolling';
+import { Overlay, OverlayRef } from '@angular/cdk/overlay';
+import { ExpenseMenuComponent } from '../../../shared/components/expense-menu/expense-menu.component';
+import { ComponentPortal } from '@angular/cdk/portal';
 
 @Component({
   selector: 'app-expense-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ConfirmDialogComponent, ScrollingModule],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent, ScrollingModule],
   templateUrl: './expense-list.component.html',
   styleUrl: './expense-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -100,9 +103,11 @@ export class ExpenseListComponent {
   // Delete / menu
   // ===========================================================================
 
+  private readonly overlay = inject(Overlay);
+  private overlayRef: OverlayRef | null = null;
+
   protected readonly deleteTarget = signal<Expense | null>(null);
   protected readonly deleteLoading = signal(false);
-  protected readonly openMenuId = signal<number | null>(null);
 
   // ===========================================================================
   // Infinite scroll
@@ -236,6 +241,8 @@ export class ExpenseListComponent {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => this.loadFirstPage());
+
+    this.destroyRef.onDestroy(() => this.closeMenu());
   }
 
   // ===========================================================================
@@ -414,29 +421,64 @@ export class ExpenseListComponent {
   }
 
   // ===========================================================================
-  // Overflow menu
+  //  menu
   // ===========================================================================
 
-  protected toggleMenu(id: number, event: Event): void {
+  protected openMenu(expense: Expense, event: MouseEvent): void {
     event.stopPropagation();
     event.preventDefault();
-    this.openMenuId.update((cur) => (cur === id ? null : id));
+
+    // Close any existing menu
+    this.closeMenu();
+
+    const origin = event.currentTarget as HTMLElement;
+
+    const positionStrategy = this.overlay
+      .position()
+      .flexibleConnectedTo(origin)
+      .withPositions([
+        // Preferred: below the button, right-aligned
+        { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 6 },
+        // Fallback: above the button, right-aligned
+        { originX: 'end', originY: 'top', overlayX: 'end', overlayY: 'bottom', offsetY: -6 },
+      ])
+      .withPush(true);
+
+    this.overlayRef = this.overlay.create({
+      positionStrategy,
+      hasBackdrop: true,
+      backdropClass: 'cdk-overlay-transparent-backdrop',
+      scrollStrategy: this.overlay.scrollStrategies.reposition(),
+      panelClass: 'expense-menu-panel',
+    });
+
+    const portal = new ComponentPortal(ExpenseMenuComponent);
+    const ref = this.overlayRef.attach(portal);
+
+    ref.setInput('expense', expense);
+    ref.setInput('categoryId', this.selectedCategoryId());
+
+    ref.instance.closed.subscribe(() => this.closeMenu());
+    ref.instance.deleted.subscribe((e) => {
+      this.closeMenu();
+      this.requestDelete(e);
+    });
+
+    // Clicking the transparent backdrop closes the menu
+    this.overlayRef.backdropClick().subscribe(() => this.closeMenu());
   }
 
-  @HostListener('document:click', ['$event'])
-  protected onDocumentClick(event: MouseEvent): void {
-    const target = event.target as HTMLElement | null;
-    if (!target?.closest('[data-card-menu]')) this.openMenuId.set(null);
+  private closeMenu(): void {
+    this.overlayRef?.dispose();
+    this.overlayRef = null;
   }
 
   // ===========================================================================
   // Delete
   // ===========================================================================
 
-  protected requestDelete(expense: Expense, event?: Event): void {
-    event?.stopPropagation();
-    event?.preventDefault();
-    this.openMenuId.set(null);
+  protected requestDelete(expense: Expense): void {
+    this.closeMenu();
     this.deleteTarget.set(expense);
   }
 

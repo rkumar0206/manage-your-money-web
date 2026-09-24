@@ -20,10 +20,7 @@ import {
 } from '../../models/expense.model';
 import { ExpenseService } from '../../services/expense.service';
 import { ExpenseCategoryService } from '../../../expense-category/services/expense-category.service';
-import {
-  CategoryName,
-  ExpenseCategory,
-} from '../../../expense-category/models/expense-category.model';
+import { CategoryName } from '../../../expense-category/models/expense-category.model';
 
 type Mode = 'create' | 'edit';
 
@@ -67,8 +64,17 @@ export class ExpenseFormComponent {
     amount: [null as number | null, [Validators.required, Validators.min(0)]],
     categoryId: [null as number | null, [Validators.required]],
     paymentMethods: [[] as string[]],
-    created: [''],
+    created: [this.nowAsLocalInput()],
   });
+
+  private nowAsLocalInput(): string {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return (
+      `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
+      `T${pad(d.getHours())}:${pad(d.getMinutes())}`
+    );
+  }
 
   protected get spentOn() {
     return this.form.controls.spentOn;

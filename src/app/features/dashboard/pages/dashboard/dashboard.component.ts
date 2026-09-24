@@ -40,7 +40,7 @@ export class DashboardComponent {
   private readonly expenseService = inject(ExpenseService);
 
   // ---- Global filter signals ----
-  protected readonly dateRangePreset = signal<DateRangePreset>('THIS_YEAR');
+  protected readonly dateRangePreset = signal<DateRangePreset>('THIS_MONTH');
   protected readonly selectedPaymentMethods = signal<string[]>([]);
   protected readonly selectedYear = signal<number>(new Date().getFullYear());
 

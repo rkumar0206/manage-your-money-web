@@ -30,7 +30,7 @@ export class CategoryBreakdownComponent {
 
   readonly dateRangePreset = input<DateRangePreset>('THIS_YEAR');
   readonly presetLabel = input<string>('This year');
-  readonly topN = input<number>(6);
+  readonly topN = input<number>(0);
 
   protected readonly data = signal<CategoryBreakdownResponseDTO | null>(null);
   protected readonly isLoading = signal(true);

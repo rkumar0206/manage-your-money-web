@@ -20,7 +20,10 @@ import {
 } from '../../models/expense.model';
 import { ExpenseService } from '../../services/expense.service';
 import { ExpenseCategoryService } from '../../../expense-category/services/expense-category.service';
-import { ExpenseCategory } from '../../../expense-category/models/expense-category.model';
+import {
+  CategoryName,
+  ExpenseCategory,
+} from '../../../expense-category/models/expense-category.model';
 
 type Mode = 'create' | 'edit';
 
@@ -48,7 +51,7 @@ export class ExpenseFormComponent {
   protected readonly isPrefetching = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
 
-  protected readonly categories = signal<ExpenseCategory[]>([]);
+  protected readonly categories = signal<CategoryName[]>([]);
 
   /** Payment methods the user has already used (from backend). */
   private readonly historyMethods = signal<string[]>([]);
@@ -99,7 +102,6 @@ export class ExpenseFormComponent {
     const cat = this.categories().find((c) => c.id === catId);
     return {
       categoryName: cat?.name ?? 'Category',
-      imageUrl: cat?.imageUrl ?? null,
       amount: this.liveAmount() ?? 0,
       methods: this.selectedMethods() ?? [],
     };
@@ -170,7 +172,7 @@ export class ExpenseFormComponent {
   }
 
   private loadCategories(): void {
-    this.categoryService.list().subscribe({
+    this.categoryService.getNames().subscribe({
       next: (data) => this.categories.set(data ?? []),
       error: () => this.errorMessage.set('Could not load categories.'),
     });

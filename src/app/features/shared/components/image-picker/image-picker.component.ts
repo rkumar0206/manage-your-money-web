@@ -84,8 +84,8 @@ export class ImagePickerComponent implements OnInit {
         }),
       )
       .subscribe({
-        next: (urls) => {
-          const batch = urls ?? [];
+        next: (response) => {
+          const batch = response.urls ?? [];
           this.results.update((curr) => (page === 1 ? batch : [...curr, ...batch]));
           this.page.set(page);
           // If the batch is smaller than the limit, we've hit the end.

@@ -2,6 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import {
+  CategoryName,
+  CategoryNameResponse,
   ExpenseCategory,
   ExpenseCategoryCreateRequest,
   ExpenseCategoryUpdateRequest,
@@ -65,5 +67,11 @@ export class ExpenseCategoryService {
     return this.http
       .get<SpringPage<ExpenseCategory>>(`${this.baseUrl}/search`, { params })
       .pipe(map((res) => res.content ?? []));
+  }
+
+  getNames(): Observable<CategoryName[]> {
+    return this.http
+      .get<CategoryNameResponse>(`${this.baseUrl}/names`)
+      .pipe(map((res) => res.categories ?? []));
   }
 }

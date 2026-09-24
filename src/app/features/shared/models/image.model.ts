@@ -1,3 +1,7 @@
+export interface ImageResponse {
+  urls: UnsplashUrls[];
+}
+
 export interface UnsplashUrls {
   raw: string;
   full: string;

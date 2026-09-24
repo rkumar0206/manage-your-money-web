@@ -4,7 +4,7 @@ export interface ExpenseCategory {
   description: string | null;
   imageUrl: string | null;
   totalExpenseAmount: number;
-  isSynced: boolean;
+  synced: boolean;
   userId: number;
   created: string; // ISO-8601 (Instant serialized)
   modified: string; // ISO-8601
@@ -21,6 +21,16 @@ export interface ExpenseCategoryUpdateRequest {
   description?: string | null;
   imageUrl?: string | null;
   isSynced: boolean;
+}
+
+export interface CategoryName {
+  id: number;
+  name: string;
+}
+
+/** Backend wraps the list in a single field. */
+export interface CategoryNameResponse {
+  categories: CategoryName[];
 }
 
 /** Spring Data `Page<T>` envelope returned by `GET /api/v1/expense-categories`. */

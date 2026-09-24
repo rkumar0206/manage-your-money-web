@@ -46,7 +46,7 @@ export class CategoryListComponent {
   });
 
   constructor() {
-    this.fetchCategories();
+    //this.fetchCategories();
 
     toObservable(this.searchTerm)
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))

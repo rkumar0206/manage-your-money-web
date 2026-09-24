@@ -29,7 +29,9 @@ import {
 } from '../../models/expense.model';
 import { ExpenseService } from '../../services/expense.service';
 import { ExpenseCategoryService } from '../../../expense-category/services/expense-category.service';
-import { ExpenseCategory } from '../../../expense-category/models/expense-category.model';
+import {
+  CategoryName,
+} from '../../../expense-category/models/expense-category.model';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
@@ -55,7 +57,7 @@ export class ExpenseListComponent {
   // ===========================================================================
 
   protected readonly expenses = signal<Expense[]>([]);
-  protected readonly categories = signal<ExpenseCategory[]>([]);
+  protected readonly categories = signal<CategoryName[]>([]);
   protected readonly availablePaymentMethods = signal<string[]>([]);
 
   protected readonly isLoading = signal(true);
@@ -83,7 +85,7 @@ export class ExpenseListComponent {
   protected readonly amount = signal<number | null>(null);
   protected readonly amountTo = signal<number | null>(null);
 
-  protected readonly dateRangePreset = signal<DateRangePreset>('ALL_TIME');
+  protected readonly dateRangePreset = signal<DateRangePreset>('THIS_MONTH');
   protected readonly createdFrom = signal(''); // datetime-local string
   protected readonly createdTo = signal('');
 
@@ -169,9 +171,19 @@ export class ExpenseListComponent {
     return this.categories().find((c) => c.id === id)?.name ?? `#${id}`;
   });
 
-  protected readonly totalLabel = computed(() =>
-    this.activeCategoryName() ? `Total in ${this.activeCategoryName()}` : 'Total spent',
-  );
+  protected readonly datePresetLabel = computed(() => {
+    const preset = this.dateRangePreset();
+    if (!preset || preset === 'ALL_TIME') return null;
+    return DATE_RANGE_PRESETS.find((p) => p.value === preset)?.label ?? null;
+  });
+
+  protected readonly totalLabel = computed(() => {
+    const category = this.activeCategoryName();
+    const preset = this.datePresetLabel();
+
+    const base = category ? `Total in ${category}` : 'Total spent';
+    return preset ? `${base} · ${preset}` : base;
+  });
 
   protected readonly showAmountTo = computed(() => this.amountOperator() === 'IS_BETWEEN');
 
@@ -263,7 +275,7 @@ export class ExpenseListComponent {
     }
 
     this.expenseService
-      .search(criteria, page)
+      .search(criteria, page, 50, 'created,desc')
       .pipe(
         finalize(() => {
           if (first) this.isLoading.set(false);
@@ -317,10 +329,10 @@ export class ExpenseListComponent {
   }
 
   private loadCategories(): void {
-    this.categoryService.list().subscribe({
+    this.categoryService.getNames().subscribe({
       next: (data) => this.categories.set(data ?? []),
       error: () => {
-        /* silent */
+        /* silent — non-critical for the expense list */
       },
     });
   }
@@ -383,7 +395,7 @@ export class ExpenseListComponent {
 
   protected onDateRangePresetChange(value: string): void {
     this.dateRangePreset.set(value as DateRangePreset);
-    if (value !== 'ALL_TIME' && value !== 'CUSTOM') {
+    if (value !== 'ALL_TIME') {
       this.createdFrom.set('');
       this.createdTo.set('');
     }

@@ -101,6 +101,8 @@
         [presetLabel]="presetLabel()"
       />
 
+      <br>
+
       <!-- Row 2: Monthly trend + Category breakdown -->
       <div class="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12">
         <div class="lg:col-span-8">
@@ -113,7 +115,7 @@
           <app-category-breakdown
             [dateRangePreset]="dateRangePreset()"
             [presetLabel]="presetLabel()"
-            [topN]="6"
+            [topN]="0"
           />
         </div>
       </div>

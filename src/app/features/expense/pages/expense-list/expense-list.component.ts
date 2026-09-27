@@ -641,11 +641,22 @@ export class ExpenseListComponent {
     if (!iso) return '';
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '';
-    return new Intl.DateTimeFormat('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    }).format(d);
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    const day = pad(d.getDate());
+    const month = pad(d.getMonth() + 1);
+    const year = d.getFullYear();
+
+    let hours = d.getHours();
+    const minutes = pad(d.getMinutes());
+    const meridiem = hours >= 12 ? 'PM' : 'AM';
+
+    hours = hours % 12;
+    if (hours === 0) hours = 12; // 12 AM / 12 PM
+    const hh = pad(hours);
+
+    return `${day}-${month}-${year} ${hh}:${minutes} ${meridiem}`;
   }
 
   protected methodLabel(method: string): string {

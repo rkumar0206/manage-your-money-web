@@ -6,6 +6,7 @@ import {
   inject,
   input,
   signal,
+  untracked,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -59,6 +60,28 @@ export class ExpenseFormComponent {
   /** Text typed into the "add custom method" input. */
   protected readonly newMethodInput = signal('');
 
+  /** Per-category cache of distinct spentOn values fetched from the backend. */
+  private readonly spentOnCache = signal<ReadonlyMap<number, string[]>>(new Map());
+
+  /** Suggestions for the currently selected category. */
+  protected readonly categorySuggestions = signal<string[]>([]);
+
+  /** Whether the dropdown is visible. */
+  protected readonly showSpentOnSuggestions = signal(false);
+
+  /** Currently highlighted suggestion index (-1 = none). */
+  protected readonly highlightedSpentOnIndex = signal(-1);
+
+  /** Filtered + capped list shown in the dropdown. */
+  protected readonly filteredSpentOnSuggestions = computed<string[]>(() => {
+    const input = (this.liveSpentOn() ?? '').trim().toLowerCase();
+    if (!input) return [];
+
+    return this.categorySuggestions()
+      .filter((s) => s.toLowerCase().includes(input) && s.toLowerCase() !== input)
+      .slice(0, 8);
+  });
+
   protected readonly form = this.fb.group({
     spentOn: ['', [Validators.maxLength(500)]],
     amount: [null as number | null, [Validators.required, Validators.min(0)]],
@@ -101,6 +124,11 @@ export class ExpenseFormComponent {
   private readonly liveCategoryId = toSignal(
     this.form.controls.categoryId.valueChanges.pipe(startWith(this.form.controls.categoryId.value)),
     { initialValue: null as number | null },
+  );
+
+  private readonly liveSpentOn = toSignal(
+    this.form.controls.spentOn.valueChanges.pipe(startWith(this.form.controls.spentOn.value)),
+    { initialValue: '' },
   );
 
   protected readonly preview = computed(() => {
@@ -174,6 +202,43 @@ export class ExpenseFormComponent {
       if (!Number.isNaN(parsed) && this.form.controls.categoryId.value == null) {
         this.form.controls.categoryId.setValue(parsed);
       }
+    });
+
+    // Fetch distinct spentOn values whenever the category changes; cache per category.
+    effect(() => {
+      const catId = this.liveCategoryId();
+      untracked(() => {
+        if (catId == null) {
+          this.categorySuggestions.set([]);
+          return;
+        }
+
+        const cached = this.spentOnCache().get(catId);
+        if (cached) {
+          this.categorySuggestions.set(cached);
+          return;
+        }
+
+        this.expenseService.getDistinctSpentOn(catId).subscribe({
+          next: (list) => {
+            this.spentOnCache.update((m) => {
+              const next = new Map(m);
+              next.set(catId, list);
+              return next;
+            });
+            // Only show if still on the same category
+            if (this.liveCategoryId() === catId) {
+              this.categorySuggestions.set(list);
+            }
+          },
+          error: () => {
+            // Non-critical — autocomplete just stays empty
+            if (this.liveCategoryId() === catId) {
+              this.categorySuggestions.set([]);
+            }
+          },
+        });
+      });
     });
   }
 
@@ -261,6 +326,75 @@ export class ExpenseFormComponent {
     const base =
       'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium whitespace-nowrap';
     return `${base} ${this.methodColorClasses(method)}`;
+  }
+
+  // ---------------------------------------------------------------------------
+  // SpentOn autocomplete
+  // ---------------------------------------------------------------------------
+
+  protected onSpentOnFocus(): void {
+    if ((this.spentOn.value ?? '').trim()) {
+      this.showSpentOnSuggestions.set(true);
+    }
+  }
+
+  protected onSpentOnBlur(): void {
+    // Delay so a suggestion click registers before we hide.
+    setTimeout(() => {
+      this.showSpentOnSuggestions.set(false);
+      this.highlightedSpentOnIndex.set(-1);
+    }, 120);
+  }
+
+  protected onSpentOnInput(): void {
+    this.highlightedSpentOnIndex.set(-1);
+    this.showSpentOnSuggestions.set((this.spentOn.value ?? '').trim().length > 0);
+  }
+
+  protected onSpentOnKeydown(event: KeyboardEvent): void {
+    const list = this.filteredSpentOnSuggestions();
+    const open = this.showSpentOnSuggestions() && list.length > 0;
+
+    if (!open) {
+      // Re-open with ArrowDown when there's text but the dropdown is closed
+      if (event.key === 'ArrowDown' && (this.spentOn.value ?? '').trim()) {
+        this.showSpentOnSuggestions.set(true);
+      }
+      return;
+    }
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.highlightedSpentOnIndex.update((i) => (i + 1) % list.length);
+        break;
+
+      case 'ArrowUp':
+        event.preventDefault();
+        this.highlightedSpentOnIndex.update((i) => (i - 1 + list.length) % list.length);
+        break;
+
+      case 'Enter':
+        if (this.highlightedSpentOnIndex() >= 0) {
+          event.preventDefault();
+          this.applySuggestion(list[this.highlightedSpentOnIndex()]);
+        }
+        break;
+
+      case 'Escape':
+        event.preventDefault();
+        this.showSpentOnSuggestions.set(false);
+        this.highlightedSpentOnIndex.set(-1);
+        break;
+    }
+  }
+
+  protected applySuggestion(value: string, event?: MouseEvent): void {
+    event?.preventDefault(); // stop the input from blurring before the click registers
+    this.spentOn.setValue(value);
+    this.spentOn.markAsDirty();
+    this.showSpentOnSuggestions.set(false);
+    this.highlightedSpentOnIndex.set(-1);
   }
 
   // ---------------------------------------------------------------------------

@@ -37,11 +37,24 @@ import {
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ExpenseMenuComponent } from '../../../shared/components/expense-menu/expense-menu.component';
 import { ComponentPortal } from '@angular/cdk/portal';
+import {
+  CopyExpenseDialogComponent
+} from '../../../shared/components/copy-expense-dialog/copy-expense-dialog.component';
+import {
+  MoveExpenseDialogComponent
+} from '../../../shared/components/move-expense-dialog/move-expense-dialog.component';
 
 @Component({
   selector: 'app-expense-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ConfirmDialogComponent, ScrollingModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ConfirmDialogComponent,
+    ScrollingModule,
+    CopyExpenseDialogComponent,
+    MoveExpenseDialogComponent,
+  ],
   templateUrl: './expense-list.component.html',
   styleUrl: './expense-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -76,6 +89,15 @@ export class ExpenseListComponent {
   // ---- Pagination ----
   private readonly currentPage = signal(0);
   protected readonly hasMore = signal(true);
+
+  // --------- Copy and Move ----------
+  protected readonly copyTarget = signal<Expense | null>(null);
+  protected readonly copyLoading = signal(false);
+  protected readonly copyError = signal<string | null>(null);
+
+  protected readonly moveTarget = signal<Expense | null>(null);
+  protected readonly moveLoading = signal(false);
+  protected readonly moveError = signal<string | null>(null);
 
   // ===========================================================================
   // Filter state
@@ -464,6 +486,18 @@ export class ExpenseListComponent {
       this.requestDelete(e);
     });
 
+    ref.instance.copyRequested.subscribe((e) => {
+      this.closeMenu();
+      this.copyError.set(null);
+      this.copyTarget.set(e);
+    });
+
+    ref.instance.moveRequested.subscribe((e) => {
+      this.closeMenu();
+      this.moveError.set(null);
+      this.moveTarget.set(e);
+    });
+
     // Clicking the transparent backdrop closes the menu
     this.overlayRef.backdropClick().subscribe(() => this.closeMenu());
   }
@@ -506,6 +540,80 @@ export class ExpenseListComponent {
         error: () => {
           this.errorMessage.set('Could not delete the expense. Please try again.');
           this.deleteTarget.set(null);
+        },
+      });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Copy
+  // ---------------------------------------------------------------------------
+
+  protected cancelCopy(): void {
+    if (this.copyLoading()) return;
+    this.copyTarget.set(null);
+    this.copyError.set(null);
+  }
+
+  protected onConfirmCopy(isoDate: string): void {
+    const src = this.copyTarget();
+    if (!src) return;
+
+    this.copyLoading.set(true);
+    this.copyError.set(null);
+
+    this.expenseService
+      .create({
+        spentOn: src.spentOn,
+        amount: Number(src.amount),
+        categoryId: src.categoryId,
+        paymentMethods: src.paymentMethods ?? [],
+        created: isoDate,
+      })
+      .pipe(finalize(() => this.copyLoading.set(false)))
+      .subscribe({
+        next: () => {
+          this.copyTarget.set(null);
+          this.reload();
+        },
+        error: () => {
+          this.copyError.set('Could not copy the expense. Please try again.');
+        },
+      });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Move
+  // ---------------------------------------------------------------------------
+
+  protected cancelMove(): void {
+    if (this.moveLoading()) return;
+    this.moveTarget.set(null);
+    this.moveError.set(null);
+  }
+
+  protected onConfirmMove(newCategoryId: number): void {
+    const src = this.moveTarget();
+    if (!src) return;
+
+    this.moveLoading.set(true);
+    this.moveError.set(null);
+
+    this.expenseService
+      .update(src.id, {
+        spentOn: src.spentOn,
+        amount: Number(src.amount),
+        categoryId: newCategoryId,
+        paymentMethods: src.paymentMethods ?? [],
+        created: src.created,
+      })
+      .pipe(finalize(() => this.moveLoading.set(false)))
+      .subscribe({
+        next: () => {
+          this.moveTarget.set(null);
+          this.reload();
+        },
+        error: () => {
+          this.moveError.set('Could not move the expense. Please try again.');
         },
       });
   }

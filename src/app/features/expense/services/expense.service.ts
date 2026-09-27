@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import {
   DateRangePreset,
   Expense,
@@ -80,5 +80,12 @@ export class ExpenseService {
 
   getTotalAmountSpentByCategoryId(categoryId: number): Observable<number> {
     return this.http.get<number>(`${this.baseUrl}/total/by-category/${categoryId}`);
+  }
+
+  getDistinctSpentOn(categoryId: number): Observable<string[]> {
+    const params = new HttpParams().set('categoryId', categoryId);
+    return this.http
+      .get<{ spentOn: string[] }>(`${this.baseUrl}/distinct-spent-on`, { params })
+      .pipe(map((res) => res.spentOn ?? []));
   }
 }

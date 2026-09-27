@@ -501,6 +501,27 @@
     }
   </div>
 
+  @if (copyTarget(); as e) {
+    <app-copy-expense-dialog
+      [expense]="e"
+      [isLoading]="copyLoading()"
+      [errorMessage]="copyError()"
+      (confirmed)="onConfirmCopy($event)"
+      (cancelled)="cancelCopy()"
+    />
+  }
+
+  @if (moveTarget(); as e) {
+    <app-move-expense-dialog
+      [expense]="e"
+      [categories]="categories()"
+      [isLoading]="moveLoading()"
+      [errorMessage]="moveError()"
+      (confirmed)="onConfirmMove($event)"
+      (cancelled)="cancelMove()"
+    />
+  }
+
   @if (deleteTarget()) {
     <app-confirm-dialog
       title="Delete expense"

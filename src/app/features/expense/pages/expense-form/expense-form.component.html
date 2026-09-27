@@ -124,20 +124,71 @@
                 </div>
               </div>
 
-              <!-- Spent on -->
-              <div class="group">
+              <!-- Spent on (with autocomplete) -->
+              <div class="group relative">
                 <label for="spentOn" class="mb-1.5 block text-sm font-medium text-slate-700">
                   Spent on
                   <span class="ml-1 text-[11px] font-normal text-slate-400">optional</span>
                 </label>
-                <input
-                  id="spentOn"
-                  type="text"
-                  formControlName="spentOn"
-                  maxlength="500"
-                  placeholder="e.g. Grocery shopping at BigBasket"
-                  class="w-full rounded-xl border border-slate-200 bg-white/80 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
-                />
+
+                <div class="relative">
+                  <input
+                    id="spentOn"
+                    type="text"
+                    formControlName="spentOn"
+                    maxlength="500"
+                    placeholder="e.g. Grocery shopping at BigBasket"
+                    autocomplete="off"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    [attr.aria-expanded]="showSpentOnSuggestions() && filteredSpentOnSuggestions().length > 0"
+                    (focus)="onSpentOnFocus()"
+                    (blur)="onSpentOnBlur()"
+                    (input)="onSpentOnInput()"
+                    (keydown)="onSpentOnKeydown($event)"
+                    class="w-full rounded-xl border border-slate-200 bg-white/80 px-4 py-3 pr-10 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                  />
+
+                  <!-- Small hint icon on the right of the field when suggestions exist -->
+                  @if (categorySuggestions().length > 0 && !showSpentOnSuggestions()) {
+                    <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-300">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+             stroke-width="1.8" stroke="currentColor" class="h-4 w-4">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z" />
+        </svg>
+      </span>
+                  }
+
+                  <!-- Suggestion dropdown -->
+                  @if (showSpentOnSuggestions() && filteredSpentOnSuggestions().length > 0) {
+                    <ul
+                      role="listbox"
+                      class="absolute left-0 right-0 top-full z-20 mt-1.5 max-h-56 overflow-y-auto rounded-xl border border-white/60 bg-white/95 p-1.5 shadow-xl shadow-slate-900/10 backdrop-blur-xl animate-menu-in"
+                    >
+                      @for (s of filteredSpentOnSuggestions(); track s; let i = $index) {
+                        <li role="option" [attr.aria-selected]="highlightedSpentOnIndex() === i">
+                          <button
+                            type="button"
+                            (mousedown)="applySuggestion(s, $event)"
+                            [class]="'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-100 ' +
+                (highlightedSpentOnIndex() === i
+                  ? 'bg-indigo-50 text-indigo-700'
+                  : 'text-slate-700 hover:bg-slate-100')"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                 stroke-width="1.8" stroke="currentColor"
+                                 class="h-3.5 w-3.5 shrink-0 opacity-60">
+                              <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                            <span class="truncate">{{ s }}</span>
+                          </button>
+                        </li>
+                      }
+                    </ul>
+                  }
+                </div>
               </div>
 
               <!-- ================= Payment methods (improved) ================= -->

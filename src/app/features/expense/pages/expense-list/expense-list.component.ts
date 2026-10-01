@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
-  HostListener,
   computed,
   inject,
   input,
@@ -13,7 +12,7 @@ import {
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { debounceTime, distinctUntilChanged, finalize } from 'rxjs';
 import {
   AMOUNT_OPERATORS,
@@ -111,7 +110,7 @@ export class ExpenseListComponent {
   protected readonly amount = signal<number | null>(null);
   protected readonly amountTo = signal<number | null>(null);
 
-  protected readonly dateRangePreset = signal<DateRangePreset>('THIS_MONTH');
+  protected readonly dateRangePreset = signal<DateRangePreset>('LAST_30_DAYS');
   protected readonly createdFrom = signal(''); // datetime-local string
   protected readonly createdTo = signal('');
 
@@ -631,10 +630,6 @@ export class ExpenseListComponent {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(Number(value) || 0);
-  }
-
-  protected formatCount(value: number | null | undefined): string {
-    return new Intl.NumberFormat('en-IN').format(Number(value) || 0);
   }
 
   protected formatDate(iso: string | null | undefined): string {

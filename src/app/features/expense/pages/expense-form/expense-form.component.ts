@@ -416,6 +416,7 @@ export class ExpenseFormComponent {
       amount: Number(v.amount),
       categoryId: Number(v.categoryId),
       paymentMethods: v.paymentMethods ?? [],
+      currency: '₹',
       created: v.created ? new Date(v.created).toISOString() : undefined,
     };
 

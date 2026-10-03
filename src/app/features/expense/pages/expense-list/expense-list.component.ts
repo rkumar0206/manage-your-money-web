@@ -12,7 +12,7 @@ import {
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { debounceTime, distinctUntilChanged, finalize } from 'rxjs';
 import {
   AMOUNT_OPERATORS,
@@ -42,6 +42,7 @@ import {
 import {
   MoveExpenseDialogComponent
 } from '../../../shared/components/move-expense-dialog/move-expense-dialog.component';
+import { ExpenseFilterStore } from '../../stores/expense-filter.store';
 
 @Component({
   selector: 'app-expense-list',
@@ -102,17 +103,17 @@ export class ExpenseListComponent {
   // Filter state
   // ===========================================================================
 
-  protected readonly searchTerm = signal('');
-  protected readonly selectedCategoryId = signal<number | null>(null);
-  protected readonly selectedPaymentMethods = signal<ReadonlySet<string>>(new Set());
+  private readonly filterStore = inject(ExpenseFilterStore);
 
-  protected readonly amountOperator = signal<AmountFilterOperator | null>(null);
-  protected readonly amount = signal<number | null>(null);
-  protected readonly amountTo = signal<number | null>(null);
-
-  protected readonly dateRangePreset = signal<DateRangePreset>('LAST_30_DAYS');
-  protected readonly createdFrom = signal(''); // datetime-local string
-  protected readonly createdTo = signal('');
+  protected readonly searchTerm = this.filterStore.searchTerm;
+  protected readonly selectedCategoryId = this.filterStore.categoryId;
+  protected readonly selectedPaymentMethods = this.filterStore.paymentMethods;
+  protected readonly amountOperator = this.filterStore.amountOperator;
+  protected readonly amount = this.filterStore.amount;
+  protected readonly amountTo = this.filterStore.amountTo;
+  protected readonly dateRangePreset = this.filterStore.dateRangePreset;
+  protected readonly createdFrom = this.filterStore.createdFrom;
+  protected readonly createdTo = this.filterStore.createdTo;
 
   /** UI-only toggle for the advanced filter panel. */
   protected readonly advancedOpen = signal(false);
@@ -236,12 +237,12 @@ export class ExpenseListComponent {
   // ===========================================================================
 
   constructor() {
-    // URL → filter: apply the query param ONLY when present.
-    // A missing param is a no-op so the dropdown remains the source of
-    // truth after the initial deep-link. Reads of selectedCategoryId are
-    // untracked so this effect does not re-run on dropdown changes.
+    // 1. Seed the store from URL on mount (URL is authoritative when present).
+    this.seedFromUrl(this.route.snapshot.queryParamMap);
+
+    // 2. Input → store: apply ?categoryId even if the route later changes.
     effect(() => {
-      const qp = this.categoryId(); // ← only reactive dep
+      const qp = this.categoryId();
       untracked(() => {
         if (qp == null) return;
         const parsed = Number(qp);
@@ -254,16 +255,94 @@ export class ExpenseListComponent {
     this.loadCategories();
     this.loadPaymentMethods();
 
-    // Reload whenever the criteria changes (debounced for text inputs).
+    // 3. Criteria changes → reload + write URL.
     toObservable(this.criteria)
       .pipe(
         debounceTime(300),
         distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe(() => this.loadFirstPage());
+      .subscribe((criteria) => {
+        this.loadFirstPage();
+        this.syncUrlFromCriteria(criteria);
+      });
+  }
 
-    this.destroyRef.onDestroy(() => this.closeMenu());
+  /** Reads URL query params and overrides store state for the ones present. */
+  private seedFromUrl(params: ParamMap): void {
+    const q = params.get('q');
+    if (q != null) this.searchTerm.set(q);
+
+    const catId = params.get('categoryId');
+    if (catId != null) {
+      const n = Number(catId);
+      if (!Number.isNaN(n)) this.selectedCategoryId.set(n);
+    }
+
+    const pm = params.get('pm');
+    if (pm != null) {
+      this.selectedPaymentMethods.set(new Set(pm.split(',').filter(Boolean)));
+    }
+
+    const preset = params.get('preset') as DateRangePreset | null;
+    if (preset != null && DATE_RANGE_PRESETS.some((p) => p.value === preset)) {
+      this.dateRangePreset.set(preset);
+    }
+
+    const op = params.get('op') as AmountFilterOperator | null;
+    if (op != null && AMOUNT_OPERATORS.some((o) => o.value === op)) {
+      this.amountOperator.set(op);
+    }
+
+    const amt = params.get('amt');
+    if (amt != null) {
+      const n = Number(amt);
+      if (!Number.isNaN(n)) this.amount.set(n);
+    }
+
+    const amtTo = params.get('amtTo');
+    if (amtTo != null) {
+      const n = Number(amtTo);
+      if (!Number.isNaN(n)) this.amountTo.set(n);
+    }
+
+    const from = params.get('from');
+    if (from != null) this.createdFrom.set(from);
+
+    const to = params.get('to');
+    if (to != null) this.createdTo.set(to);
+  }
+
+  /** Mirrors the current filter state into the URL. No-op if nothing changed. */
+  private syncUrlFromCriteria(c: ExpenseSearchRequest): void {
+    const desired: Record<string, string | null> = {
+      q: c.spentOn ?? null,
+      categoryId: c.categoryId != null ? String(c.categoryId) : null,
+      pm: c.paymentMethods?.length ? c.paymentMethods.join(',') : null,
+      preset: c.dateRangePreset ?? null,
+      op: c.amountOperator ?? null,
+      amt: c.amount != null ? String(c.amount) : null,
+      amtTo: c.amountTo != null ? String(c.amountTo) : null,
+      from: c.createdFrom ?? null,
+      to: c.createdTo ?? null,
+    };
+
+    const current = this.route.snapshot.queryParamMap;
+    const keys = Object.keys(desired);
+    let changed = false;
+    for (const key of keys) {
+      if ((current.get(key) ?? null) !== desired[key]) {
+        changed = true;
+        break;
+      }
+    }
+    if (!changed) return;
+
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: desired,
+      replaceUrl: true,
+    });
   }
 
   // ===========================================================================
@@ -375,7 +454,6 @@ export class ExpenseListComponent {
     if (this.selectedCategoryId() === next) return;
 
     this.selectedCategoryId.set(next);
-    this.stripCategoryIdFromUrl();
   }
 
   protected togglePaymentFilter(method: string): void {
@@ -428,17 +506,7 @@ export class ExpenseListComponent {
   }
 
   protected clearAllFilters(): void {
-    this.searchTerm.set('');
-    this.selectedCategoryId.set(null);
-    this.selectedPaymentMethods.set(new Set());
-    this.amountOperator.set(null);
-    this.amount.set(null);
-    this.amountTo.set(null);
-    this.dateRangePreset.set('ALL_TIME');
-    this.createdFrom.set('');
-    this.createdTo.set('');
-
-    this.stripCategoryIdFromUrl();
+    this.filterStore.reset();
   }
 
   // ===========================================================================
@@ -673,22 +741,6 @@ export class ExpenseListComponent {
     const cat = this.selectedCategoryId();
     this.router.navigate(['/expenses', 'new'], {
       queryParams: cat != null ? { categoryId: cat } : undefined,
-    });
-  }
-
-  /**
-   * Removes ?categoryId from the URL without adding a history entry.
-   * Called after the user interacts with the dropdown so the URL
-   * no longer carries the deep-link param.
-   */
-  private stripCategoryIdFromUrl(): void {
-    if (this.categoryId() == null) return;
-
-    void this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { categoryId: null },
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
     });
   }
 }

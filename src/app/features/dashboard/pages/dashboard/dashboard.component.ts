@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -13,6 +21,8 @@ import { DayOfWeekComponent } from '../../widgets/day-of-week/day-of-week.compon
 import { TopVendorsComponent } from '../../widgets/top-vendors/top-vendors.component';
 import { RecentExpensesComponent } from '../../widgets/recent-expenses/recent-expenses.component';
 import { DailyHeatmapComponent } from '../../widgets/daily-heatmap/daily-heatmap.component';
+import { DashboardFilterStore } from '../../stores/dashboard-filter.store';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 
 const MIN_YEAR = 2018;
 const DASHBOARD_PRESETS = DATE_RANGE_PRESETS;
@@ -40,9 +50,15 @@ export class DashboardComponent {
   private readonly expenseService = inject(ExpenseService);
 
   // ---- Global filter signals ----
-  protected readonly dateRangePreset = signal<DateRangePreset>('LAST_30_DAYS');
-  protected readonly selectedPaymentMethods = signal<string[]>([]);
-  protected readonly selectedYear = signal<number>(new Date().getFullYear());
+  private readonly filterStore = inject(DashboardFilterStore);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
+  protected readonly dateRangePreset = this.filterStore.dateRangePreset;
+  protected readonly selectedYear = this.filterStore.selectedYear;
+  protected readonly paymentMethods = this.filterStore.paymentMethods;
+
+  protected readonly selectedPaymentMethods = this.filterStore.paymentMethods;
 
   protected readonly presets = DASHBOARD_PRESETS;
   protected readonly availablePaymentMethods = signal<string[]>([]);
@@ -63,12 +79,63 @@ export class DashboardComponent {
   /** The single filter context — a snapshot passed down to each widget. */
   protected readonly filter = computed<DashboardFilter>(() => ({
     dateRangePreset: this.dateRangePreset(),
-    paymentMethods: this.selectedPaymentMethods(),
+    paymentMethods: [...this.selectedPaymentMethods()],
     year: this.selectedYear(),
   }));
 
   constructor() {
+    this.seedFromUrl(this.route.snapshot.queryParamMap);
     this.loadPaymentMethods();
+
+    // Mirror filter state to URL whenever any of the three changes.
+    effect(() => {
+      const preset = this.dateRangePreset();
+      const year = this.selectedYear();
+      const pm = [...this.selectedPaymentMethods()];
+
+      untracked(() => this.syncUrl(preset, year, pm));
+    });
+  }
+
+  private seedFromUrl(params: ParamMap): void {
+    const preset = params.get('preset') as DateRangePreset | null;
+    if (preset != null && this.presets.some((p) => p.value === preset)) {
+      this.dateRangePreset.set(preset);
+    }
+
+    const year = Number(params.get('year'));
+    if (!Number.isNaN(year) && year >= 2018 && year <= new Date().getFullYear()) {
+      this.selectedYear.set(year);
+    }
+
+    const pm = params.get('pm');
+    if (pm != null) {
+      this.selectedPaymentMethods.set(new Set(pm.split(',').filter(Boolean)));
+    }
+  }
+
+  private syncUrl(preset: DateRangePreset, year: number, paymentMethods: string[]): void {
+    const desired: Record<string, string | null> = {
+      preset: preset !== 'THIS_YEAR' ? preset : null,
+      year: year !== new Date().getFullYear() ? String(year) : null,
+      pm: paymentMethods.length ? paymentMethods.join(',') : null,
+    };
+
+    const current = this.route.snapshot.queryParamMap;
+    let changed = false;
+    for (const key of Object.keys(desired)) {
+      if ((current.get(key) ?? null) !== desired[key]) {
+        changed = true;
+        break;
+      }
+    }
+    if (!changed) return;
+
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: desired,
+      replaceUrl: true,
+    });
   }
 
   // ---- Filter mutations ----
@@ -83,17 +150,19 @@ export class DashboardComponent {
   }
 
   protected togglePaymentMethod(m: string): void {
-    this.selectedPaymentMethods.update((curr) =>
-      curr.includes(m) ? curr.filter((x) => x !== m) : [...curr, m],
-    );
+    this.selectedPaymentMethods.update((curr) => {
+      const next = new Set(curr);
+      next.has(m) ? next.delete(m) : next.add(m);
+      return next;
+    });
   }
 
   protected isPaymentSelected(m: string): boolean {
-    return this.selectedPaymentMethods().includes(m);
+    return this.selectedPaymentMethods().has(m);
   }
 
   protected clearPaymentMethods(): void {
-    this.selectedPaymentMethods.set([]);
+    this.selectedPaymentMethods.set(new Set());
   }
 
   protected methodLabel(m: string): string {

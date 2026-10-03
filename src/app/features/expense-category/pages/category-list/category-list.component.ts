@@ -9,12 +9,13 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router, RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged, finalize } from 'rxjs';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { ExpenseCategory } from '../../models/expense-category.model';
 import { ExpenseCategoryService } from '../../services/expense-category.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { CategoryFilterStore } from '../../stores/category-filter.store';
 
 @Component({
   selector: 'app-category-list',
@@ -27,8 +28,12 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
 export class CategoryListComponent {
   private readonly categoryService = inject(ExpenseCategoryService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
-  protected readonly searchTerm = signal('');
+  private readonly filterStore = inject(CategoryFilterStore);
+  protected readonly searchTerm = this.filterStore.searchTerm;
+
   protected readonly categories = signal<ExpenseCategory[]>([]);
 
   protected readonly isLoading = signal(true);
@@ -46,14 +51,34 @@ export class CategoryListComponent {
   });
 
   constructor() {
-    //this.fetchCategories();
+    this.seedFromUrl(this.route.snapshot.queryParamMap);
 
     toObservable(this.searchTerm)
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.fetchCategories());
+      .subscribe((term) => {
+        this.fetchCategories();
+        this.syncUrlFromSearch(term);
+      });
   }
 
   // ---------------------------------------------------------------------------
+
+  private seedFromUrl(params: ParamMap): void {
+    const q = params.get('q');
+    if (q != null) this.searchTerm.set(q);
+  }
+
+  private syncUrlFromSearch(term: string): void {
+    const current = this.route.snapshot.queryParamMap.get('q') ?? null;
+    const desired = term.trim() || null;
+    if (current === desired) return;
+
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { q: desired },
+      replaceUrl: true,
+    });
+  }
 
   private fetchCategories(): void {
     this.isLoading.set(true);
@@ -79,7 +104,7 @@ export class CategoryListComponent {
   }
 
   protected clearSearch(): void {
-    this.searchTerm.set('');
+    this.filterStore.reset();
   }
 
   // ---------------------------------------------------------------------------

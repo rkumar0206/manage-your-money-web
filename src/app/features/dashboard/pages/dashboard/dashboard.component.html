@@ -78,7 +78,7 @@
                 {{ methodLabel(m) }}
               </button>
             }
-            @if (selectedPaymentMethods().length > 0) {
+            @if (selectedPaymentMethods().size > 0) {
               <button
                 type="button"
                 (click)="clearPaymentMethods()"
@@ -108,7 +108,7 @@
         <div class="lg:col-span-8">
           <app-monthly-trend
             [year]="selectedYear()"
-            [paymentMethods]="selectedPaymentMethods()"
+            [paymentMethods]="[...selectedPaymentMethods()]"
           />
         </div>
         <div class="lg:col-span-4">

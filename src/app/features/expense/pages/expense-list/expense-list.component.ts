@@ -631,6 +631,7 @@ export class ExpenseListComponent {
     this.expenseService
       .create({
         spentOn: src.spentOn,
+        currency: '₹',
         amount: Number(src.amount),
         categoryId: src.categoryId,
         paymentMethods: src.paymentMethods ?? [],

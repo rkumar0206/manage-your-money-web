@@ -21,6 +21,7 @@ export interface ExpenseCreateRequest {
   categoryId: number;
   paymentMethods?: string[];
   created?: string;
+  currency: string;
 }
 
 export interface ExpenseUpdateRequest {

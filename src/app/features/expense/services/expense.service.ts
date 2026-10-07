@@ -2,7 +2,6 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import {
-  DateRangePreset,
   Expense,
   ExpenseCreateRequest,
   ExpenseSearchRequest,
@@ -72,14 +71,6 @@ export class ExpenseService {
 
   distinctPaymentMethods(): Observable<PaymentMethodResponse> {
     return this.http.get<PaymentMethodResponse>(`${this.baseUrl}/payment-methods`);
-  }
-
-  getTotalAmountSpentByUserId(): Observable<number> {
-    return this.http.get<number>(`${this.baseUrl}/total`);
-  }
-
-  getTotalAmountSpentByCategoryId(categoryId: number): Observable<number> {
-    return this.http.get<number>(`${this.baseUrl}/total/by-category/${categoryId}`);
   }
 
   getDistinctSpentOn(categoryId: number): Observable<string[]> {

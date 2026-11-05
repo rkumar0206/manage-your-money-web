@@ -2,25 +2,27 @@
   class="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-slate-50 via-white to-indigo-50 flex items-center justify-center p-4 sm:p-6"
 >
   <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-    <div class="absolute -top-32 -right-32 h-72 w-72 sm:h-96 sm:w-96 rounded-full bg-indigo-400/30 blur-3xl animate-float-slow"></div>
-    <div class="absolute -bottom-32 -left-32 h-72 w-72 sm:h-96 sm:w-96 rounded-full bg-fuchsia-400/30 blur-3xl animate-float-slower"></div>
+    <div
+      class="absolute -top-32 -right-32 h-72 w-72 sm:h-96 sm:w-96 rounded-full bg-indigo-400/30 blur-3xl animate-float-slow"></div>
+    <div
+      class="absolute -bottom-32 -left-32 h-72 w-72 sm:h-96 sm:w-96 rounded-full bg-fuchsia-400/30 blur-3xl animate-float-slower"></div>
   </div>
 
   <main class="relative z-10 w-full max-w-md">
     <div
       class="rounded-3xl border border-white/60 bg-white/70 p-6 sm:p-8 shadow-2xl shadow-indigo-500/10 backdrop-blur-xl animate-fade-in-up"
     >
-<!--      @if (errorMessage()) {-->
-<!--        <div role="alert"-->
-<!--             class="mb-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 animate-shake">-->
-<!--          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"-->
-<!--               stroke-width="1.8" stroke="currentColor" class="mt-0.5 h-4 w-4 shrink-0">-->
-<!--            <path stroke-linecap="round" stroke-linejoin="round"-->
-<!--                  d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />-->
-<!--          </svg>-->
-<!--          <span>{{ errorMessage() }}</span>-->
-<!--        </div>-->
-<!--      }-->
+      <!--      @if (errorMessage()) {-->
+      <!--        <div role="alert"-->
+      <!--             class="mb-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 animate-shake">-->
+      <!--          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"-->
+      <!--               stroke-width="1.8" stroke="currentColor" class="mt-0.5 h-4 w-4 shrink-0">-->
+      <!--            <path stroke-linecap="round" stroke-linejoin="round"-->
+      <!--                  d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />-->
+      <!--          </svg>-->
+      <!--          <span>{{ errorMessage() }}</span>-->
+      <!--        </div>-->
+      <!--      }-->
 
       @if (successMessage()) {
         <!-- ============ SUCCESS STATE ============ -->
@@ -87,8 +89,8 @@
           </a>
         </div>
 
-      }@else {
-        <!-- ============ FORM STATE (unchanged) ============ -->
+      } @else {
+        <!-- ============ FORM STATE ============ -->
         <header class="mb-6 sm:mb-8 text-center">
           <div
             class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white shadow-lg shadow-indigo-500/30 animate-pop-in"
@@ -115,7 +117,8 @@
               <span class="text-[11px] font-medium text-slate-400">5–15 characters</span>
             </div>
             <div class="relative">
-            <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-indigo-500">
+            <span
+              class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-indigo-500">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                    stroke-width="1.8" stroke="currentColor" class="h-4 w-4">
                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -130,15 +133,59 @@
                 minlength="5"
                 maxlength="15"
                 placeholder="janedoe"
-                class="w-full rounded-xl border border-slate-200 bg-white/80 px-10 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                class="w-full rounded-xl border border-slate-200 bg-white/80 px-10 py-3 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
                 [class.!border-red-400]="username.touched && username.invalid"
               />
             </div>
             @if (username.touched && username.invalid) {
               <p class="mt-1.5 text-xs text-red-600 animate-fade-in">
-                @if (username.errors?.['required']) { Username is required. }
-                @else if (username.errors?.['minlength']) { Username must be at least 5 characters. }
-                @else if (username.errors?.['maxlength']) { Username cannot exceed 15 characters. }
+                @if (username.errors?.['required']) {
+                  Username is required.
+                } @else if (username.errors?.['minlength']) {
+                  Username must be at least 5 characters.
+                } @else if (username.errors?.['maxlength']) {
+                  Username cannot exceed 15 characters.
+                }
+              </p>
+            }
+          </div>
+
+          <!-- Full Name -->
+          <div class="group">
+            <div class="mb-1.5 flex items-center justify-between">
+              <label for="fullName" class="block text-sm font-medium text-slate-700">Full Name</label>
+              <span class="text-[11px] font-medium text-slate-400">2–50 characters</span>
+            </div>
+            <div class="relative">
+            <span
+              class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-indigo-500">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                   stroke-width="1.8" stroke="currentColor" class="h-4 w-4">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+              </svg>
+            </span>
+              <input
+                id="fullName"
+                type="text"
+                formControlName="fullName"
+                autocomplete="name"
+                minlength="2"
+                maxlength="50"
+                placeholder="Jane Doe"
+                class="w-full rounded-xl border border-slate-200 bg-white/80 px-10 py-3 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                [class.!border-red-400]="fullName.touched && fullName.invalid"
+              />
+            </div>
+            @if (fullName.touched && fullName.invalid) {
+              <p class="mt-1.5 text-xs text-red-600 animate-fade-in">
+                @if (fullName.errors?.['required']) {
+                  Full name is required.
+                } @else if (fullName.errors?.['minlength']) {
+                  Full name must be at least 2 characters.
+                } @else if (fullName.errors?.['maxlength']) {
+                  Full name cannot exceed 50 characters.
+                }
               </p>
             }
           </div>
@@ -147,7 +194,8 @@
           <div class="group">
             <label for="email" class="mb-1.5 block text-sm font-medium text-slate-700">Email</label>
             <div class="relative">
-            <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-indigo-500">
+            <span
+              class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-indigo-500">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                    stroke-width="1.8" stroke="currentColor" class="h-4 w-4">
                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -160,14 +208,17 @@
                 formControlName="email"
                 autocomplete="email"
                 placeholder="you@example.com"
-                class="w-full rounded-xl border border-slate-200 bg-white/80 px-10 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                class="w-full rounded-xl border border-slate-200 bg-white/80 px-10 py-3 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
                 [class.!border-red-400]="email.touched && email.invalid"
               />
             </div>
             @if (email.touched && email.invalid) {
               <p class="mt-1.5 text-xs text-red-600 animate-fade-in">
-                @if (email.errors?.['required']) { Email is required. }
-                @else if (email.errors?.['email']) { Please enter a valid email address. }
+                @if (email.errors?.['required']) {
+                  Email is required.
+                } @else if (email.errors?.['email']) {
+                  Please enter a valid email address.
+                }
               </p>
             }
           </div>
@@ -176,7 +227,8 @@
           <div class="group">
             <label for="password" class="mb-1.5 block text-sm font-medium text-slate-700">Password</label>
             <div class="relative">
-            <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-indigo-500">
+            <span
+              class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-indigo-500">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                    stroke-width="1.8" stroke="currentColor" class="h-4 w-4">
                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -191,7 +243,7 @@
                 placeholder="Create a strong password"
                 (focus)="onPasswordFocus()"
                 (blur)="onPasswordBlur()"
-                class="w-full rounded-xl border border-slate-200 bg-white/80 px-10 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                class="w-full rounded-xl border border-slate-200 bg-white/80 px-10 py-3 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
                 [class.!border-red-400]="password.touched && password.invalid"
               />
               <button
@@ -263,9 +315,11 @@
 
           <!-- Confirm password -->
           <div class="group">
-            <label for="confirmPassword" class="mb-1.5 block text-sm font-medium text-slate-700">Confirm password</label>
+            <label for="confirmPassword" class="mb-1.5 block text-sm font-medium text-slate-700">Confirm
+              password</label>
             <div class="relative">
-            <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-indigo-500">
+            <span
+              class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-indigo-500">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                    stroke-width="1.8" stroke="currentColor" class="h-4 w-4">
                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -278,7 +332,7 @@
                 formControlName="confirmPassword"
                 autocomplete="new-password"
                 placeholder="Repeat password"
-                class="w-full rounded-xl border border-slate-200 bg-white/80 px-10 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                class="w-full rounded-xl border border-slate-200 bg-white/80 px-10 py-3 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
                 [class.!border-red-400]="confirmPassword.touched && (confirmPassword.invalid || form.errors?.['passwordsMismatch'])"
               />
               <button
@@ -332,7 +386,8 @@
                       d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
               </svg>
             }
-            <span class="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full"></span>
+            <span
+              class="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full"></span>
           </button>
         </form>
 

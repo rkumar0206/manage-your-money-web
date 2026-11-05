@@ -1,0 +1,367 @@
+<section class="relative min-h-full w-full px-4 pt-6 pb-28 sm:px-6 sm:pt-8 sm:pb-10 lg:px-10">
+
+  <!-- WRAPPER TO HIDE ON PRINT -->
+  <div class="print:hidden">
+    <div class="relative z-10 mx-auto w-full max-w-5xl animate-fade-in-up">
+
+      <!-- Header -->
+      <header class="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <a routerLink="/splits" class="mb-2 inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-indigo-600">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-3.5 w-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+            Back to groups
+          </a>
+          <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+            {{ group()?.name || 'Loading...' }}
+          </h1>
+          @if (group()?.description) {
+            <p class="mt-1 text-sm text-slate-500">{{ group()?.description }}</p>
+          }
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button (click)="isReportOpen.set(true)" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-sm hover:text-indigo-600">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" /></svg>
+            Share Report
+          </button>
+
+          <button (click)="isAddExpenseOpen.set(true)" class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg hover:-translate-y-0.5">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+            Add Expense
+          </button>
+
+          <!-- NEW: ADD MEMBER BUTTON -->
+          <button (click)="isAddMemberOpen.set(true)" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-600 shadow-sm hover:text-indigo-600 transition-colors" title="Add Member">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-4 w-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+            </svg>
+            Add Member
+          </button>
+
+          <!-- Options Menu (Only for Creator) -->
+          @if (isCreator()) {
+            <div class="relative">
+              <button (click)="toggleMenu($event)" class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-5 w-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" /></svg>
+              </button>
+              @if (menuOpen()) {
+                <div class="absolute right-0 top-full z-30 mt-2 w-48 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl animate-menu-in">
+                  <button (click)="isEditGroupOpen.set(true); menuOpen.set(false)" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+                    Edit Group
+                  </button>
+                  <button (click)="isDeleteGroupOpen.set(true); menuOpen.set(false)" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+                    Delete Group
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </header>
+
+      @if (isLoading()) {
+        <div class="flex h-64 items-center justify-center">
+          <svg class="h-8 w-8 animate-spin text-indigo-500" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25" stroke-width="4" /><path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="4" stroke-linecap="round" /></svg>
+        </div>
+      } @else if (group() && balances()) {
+
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+
+          <!-- LEFT COLUMN: Expenses -->
+          <div class="lg:col-span-7 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h2 class="text-sm font-bold uppercase tracking-widest text-slate-400">Expense Ledger</h2>
+
+              <!-- Left side: Title & Total -->
+              <div class="flex items-center gap-3">
+              <span class="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-bold text-indigo-700 shadow-sm border border-indigo-100">
+                Total: {{ formatCurrency(filteredTotal()) }}
+              </span>
+              </div>
+
+              <!-- Active Filter Pill -->
+              @if (selectedMemberId() !== null) {
+                <div class="flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 animate-fade-in">
+                  Paid by: {{ selectedMemberName() }}
+                  <button (click)="clearMemberFilter()" class="rounded-full p-0.5 hover:bg-indigo-200 transition-colors" title="Clear filter">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="h-3 w-3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                  </button>
+                </div>
+              }
+            </div>
+
+            @if (filteredExpenses().length === 0) {
+              <div class="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500">
+                @if (selectedMemberId() !== null) {
+                  No expenses found paid by {{ selectedMemberName() }}.
+                } @else {
+                  No expenses yet. Click "Add Expense" to start.
+                }
+              </div>
+            } @else {
+              <div class="space-y-3">
+                @for (e of filteredExpenses(); track e.id) {
+                  <div class="group/item relative rounded-2xl border border-white/60 bg-white/80 p-4 shadow-sm backdrop-blur-xl">
+                    <div class="flex items-start justify-between">
+                      <div class="flex items-center gap-3">
+                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-5 w-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                        </div>
+                        <div>
+                          <p class="font-bold text-slate-900">{{ e.description }}</p>
+                          <p class="text-[11px] text-slate-500">{{ formatDate(e.expenseDate) }} • Paid by <span class="font-semibold">{{ e.paidByMemberName }}</span></p>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-2">
+                        <p class="font-bold text-slate-900">{{ formatCurrency(e.amount) }}</p>
+
+                        <!-- Expense Options Menu -->
+                        <div class="relative">
+                          <button (click)="toggleExpenseMenu(e.id, $event)" class="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" /></svg>
+                          </button>
+
+                          @if (openExpenseMenuId() === e.id) {
+                            <div class="absolute right-0 top-full z-30 mt-1 w-32 rounded-xl border border-white/60 bg-white/95 p-1.5 shadow-xl backdrop-blur-xl animate-menu-in">
+                              <button (click)="editExpense(e)" class="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-xs font-medium text-slate-700 hover:bg-slate-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-3.5 w-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+                                Edit
+                              </button>
+                              <button (click)="expenseToDelete.set(e); openExpenseMenuId.set(null)" class="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-xs font-medium text-red-600 hover:bg-red-50">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-3.5 w-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+                                Delete
+                              </button>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Tiny breakdown of shares -->
+                    <div class="mt-3 flex flex-wrap gap-1.5 border-t border-slate-100 pt-3">
+                      @for (s of e.shares; track s.memberId) {
+                        <span class="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                        {{ s.memberName }}: {{ formatCurrency(s.amount) }}
+                      </span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- RIGHT COLUMN: Balances -->
+          <div class="lg:col-span-5 space-y-4">
+            <div class="rounded-2xl border border-white/60 bg-white/80 p-5 shadow-lg shadow-indigo-500/5 backdrop-blur-xl">
+              <h2 class="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">Who owes whom</h2>
+              <p class="text-[10px] text-slate-400 mb-4">Simplified debts to minimize the total number of transactions.</p>
+
+              @if (balances()!.suggestedSettlements.length === 0) {
+                <div class="rounded-xl bg-emerald-50 p-4 text-center border border-emerald-100">
+                  <p class="text-sm font-semibold text-emerald-700">Everyone is settled up! 🎉</p>
+                </div>
+              } @else {
+                <ul class="space-y-3">
+                  @for (s of balances()!.suggestedSettlements; track $index) {
+                    <li class="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 p-3 text-sm border border-slate-100 hover:border-indigo-100 transition-colors">
+                      <div class="flex items-center gap-2">
+                        <span class="font-semibold text-slate-700">{{ s.fromName }}</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-3 w-3 text-slate-400"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
+                        <span class="font-semibold text-slate-700">{{ s.toName }}</span>
+                      </div>
+                      <div class="flex items-center gap-3">
+                        <span class="font-bold text-indigo-600">{{ formatCurrency(s.amount) }}</span>
+                        <button (click)="activeSettlement.set(s)" class="rounded-lg bg-indigo-100 px-2.5 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-200 transition-colors">
+                          Settle
+                        </button>
+                      </div>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+
+            <!-- Group Members list -->
+            <div class="rounded-2xl border border-white/60 bg-white/80 p-5 shadow-lg shadow-indigo-500/5 backdrop-blur-xl">
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-bold uppercase tracking-widest text-slate-400">Members ({{ group()!.members.length }})</h2>
+                <p class="text-[10px] font-medium text-slate-400">Click to filter</p>
+              </div>
+
+              <ul class="space-y-1">
+                @for (m of group()!.members; track m.id) {
+                  <li
+                    class="group/member flex items-center justify-between rounded-lg px-2 py-1.5 transition-colors cursor-pointer"
+                    [class.bg-indigo-50]="selectedMemberId() === m.id"
+                    [class.hover:bg-slate-100]="selectedMemberId() !== m.id"
+                    (click)="toggleMemberFilter(m.id)"
+                  >
+                    <div class="flex items-center gap-2">
+                      <!-- Checkbox Indicator -->
+                      <div class="flex h-4 w-4 items-center justify-center rounded border transition-colors"
+                           [class.border-indigo-500]="selectedMemberId() === m.id"
+                           [class.bg-indigo-500]="selectedMemberId() === m.id"
+                           [class.border-slate-300]="selectedMemberId() !== m.id">
+                        @if (selectedMemberId() === m.id) {
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14" fill="none" class="h-3 w-3 text-white"><path d="M3 7.5L5.5 10L11 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        }
+                      </div>
+
+                      <span class="text-sm font-medium transition-colors"
+                            [class.text-indigo-700]="selectedMemberId() === m.id"
+                            [class.text-slate-700]="selectedMemberId() !== m.id">
+                      {{ m.name }}
+                        @if (m.isCreator) { <span class="text-[10px] text-indigo-500 ml-1">(Admin)</span> }
+                    </span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                      @if (m.userId == null) {
+                        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded">Guest</span>
+                      }
+
+                      <!-- Remove Member Button (stopPropagation prevents filtering) -->
+                      @if (isCreator() && !m.isCreator) {
+                        <button (click)="$event.stopPropagation(); removeMember(m.id, m.name)" class="opacity-0 group-hover/member:opacity-100 flex h-6 w-6 items-center justify-center rounded-md text-red-400 hover:bg-red-50 hover:text-red-600 transition-opacity" title="Remove Member">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                        </button>
+                      }
+                    </div>
+                  </li>
+                }
+              </ul>
+            </div>
+
+            <!-- Settlement History -->
+            @if (settlements().length > 0) {
+              <div class="rounded-2xl border border-white/60 bg-white/80 p-5 shadow-lg shadow-indigo-500/5 backdrop-blur-xl">
+                <h2 class="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">Settlement History</h2>
+                <ul class="space-y-3">
+                  @for (s of settlements(); track s.id) {
+                    <li class="group/settle flex items-center justify-between text-sm">
+                      <div>
+                        <p class="text-slate-700">
+                          <span class="font-semibold">{{ s.paidByMemberName }}</span> paid <span class="font-semibold">{{ s.paidToMemberName }}</span>
+                        </p>
+                        <p class="text-[11px] text-slate-400">{{ formatDate(s.settlementDate) }}</p>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold text-emerald-600">{{ formatCurrency(s.amount) }}</span>
+                        <button (click)="settlementToDelete.set(s)" class="opacity-0 group-hover/settle:opacity-100 flex h-6 w-6 items-center justify-center rounded-md text-red-400 hover:bg-red-50 hover:text-red-600 transition-opacity" title="Delete Settlement">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                        </button>
+                      </div>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+
+          </div>
+
+        </div>
+      }
+    </div>
+  </div>
+  <!-- END WRAPPER -->
+
+
+  <!-- Dialogs -->
+  @if (isAddExpenseOpen()) {
+    <app-add-expense-dialog
+      [groupId]="Number(id())"
+      [members]="group()!.members"
+      (saved)="onExpenseSaved()"
+      (cancelled)="isAddExpenseOpen.set(false)"
+    />
+  }
+
+  <!-- NEW: ADD MEMBER DIALOG -->
+  @if (isAddMemberOpen()) {
+    <app-add-member-dialog
+      [groupId]="Number(id())"
+      [existingUserIds]="existingUserIds()"
+      (saved)="onMembersAdded()"
+      (cancelled)="isAddMemberOpen.set(false)"
+    />
+  }
+
+  @if (expenseToEdit()) {
+    <app-add-expense-dialog
+      [groupId]="Number(id())"
+      [members]="group()!.members"
+      [expenseToEdit]="expenseToEdit()"
+      (saved)="expenseToEdit.set(null); loadData(Number(id()))"
+      (cancelled)="expenseToEdit.set(null)"
+    />
+  }
+
+  @if (isEditGroupOpen()) {
+    <app-edit-group-dialog
+      [group]="group()!"
+      (saved)="onGroupUpdated()"
+      (cancelled)="isEditGroupOpen.set(false)"
+    />
+  }
+
+  @if (isDeleteGroupOpen()) {
+    <app-confirm-dialog
+      title="Delete Group"
+      message="Are you sure you want to delete this group? All expenses and balances will be permanently lost."
+      confirmText="Delete Group"
+      variant="danger"
+      [isLoading]="isDeletingGroup()"
+      (confirmed)="confirmDeleteGroup()"
+      (cancelled)="isDeleteGroupOpen.set(false)"
+    />
+  }
+
+  @if (expenseToDelete()) {
+    <app-confirm-dialog
+      title="Delete Expense"
+      message="Are you sure you want to delete this expense? The balances will be recalculated."
+      confirmText="Delete"
+      variant="danger"
+      [isLoading]="isDeletingExpense()"
+      (confirmed)="confirmDeleteExpense()"
+      (cancelled)="expenseToDelete.set(null)"
+    />
+  }
+
+  <!-- NEW: Settle Up Dialog -->
+  @if (activeSettlement()) {
+    <app-settle-up-dialog
+      [groupId]="Number(id())"
+      [transaction]="activeSettlement()!"
+      (saved)="activeSettlement.set(null); loadData(Number(id()))"
+      (cancelled)="activeSettlement.set(null)"
+    />
+  }
+
+  <!-- NEW: Delete Settlement Confirm -->
+  @if (settlementToDelete()) {
+    <app-confirm-dialog
+      title="Delete Settlement"
+      message="Are you sure you want to delete this settlement record? Balances will be recalculated."
+      confirmText="Delete"
+      variant="danger"
+      [isLoading]="isDeletingSettlement()"
+      (confirmed)="confirmDeleteSettlement()"
+      (cancelled)="settlementToDelete.set(null)"
+    />
+  }
+  <!-- NEW: Report Modal -->
+  @if (isReportOpen()) {
+    <app-split-report-modal
+      [group]="group()!"
+      [balances]="balances()!"
+      [expenses]="expenses()"
+      [settlements]="settlements()"
+      (closed)="isReportOpen.set(false)"
+    />
+  }
+</section>

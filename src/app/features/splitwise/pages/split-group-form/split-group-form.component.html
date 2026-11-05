@@ -1,0 +1,217 @@
+<section class="relative min-h-full w-full px-4 pt-6 pb-28 sm:px-6 sm:pt-8 sm:pb-10 lg:px-10">
+  <div class="relative z-10 mx-auto w-full max-w-3xl animate-fade-in-up">
+
+    <!-- Header -->
+    <header class="mb-6 sm:mb-8">
+      <a
+        routerLink="/splits"
+        class="mb-2 inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition-colors hover:text-indigo-600"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+             stroke-width="2" stroke="currentColor" class="h-3.5 w-3.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+        </svg>
+        Back to splits
+      </a>
+      <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+        Create Split Group
+      </h1>
+      <p class="mt-1.5 text-sm text-slate-500">
+        Group your shared expenses (e.g., "Goa Trip", "Flatmates").
+      </p>
+    </header>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="space-y-6">
+
+      <!-- Error Banner -->
+      @if (errorMessage()) {
+        <div role="alert"
+             class="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 animate-shake">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               stroke-width="1.8" stroke="currentColor" class="mt-0.5 h-4 w-4 shrink-0">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+          </svg>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <!-- Group Details Card -->
+      <div class="rounded-2xl border border-white/60 bg-white/70 p-5 shadow-lg shadow-indigo-500/5 backdrop-blur-xl sm:p-6 space-y-5">
+        <!-- Name -->
+        <div class="group">
+          <label for="name" class="mb-1.5 block text-sm font-medium text-slate-700">
+            Group Name <span class="text-red-500">*</span>
+          </label>
+          <input
+            id="name"
+            type="text"
+            formControlName="name"
+            placeholder="e.g. Goa Trip 2026"
+            class="w-full rounded-xl border border-slate-200 bg-white/80 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+            [class.!border-red-400]="name.touched && name.invalid"
+          />
+          @if (name.touched && name.invalid) {
+            <p class="mt-1.5 text-xs text-red-600 animate-fade-in">Group name is required.</p>
+          }
+        </div>
+
+        <!-- Description -->
+        <div class="group">
+          <label for="description" class="mb-1.5 block text-sm font-medium text-slate-700">
+            Description <span class="ml-1 text-[11px] font-normal text-slate-400">optional</span>
+          </label>
+          <input
+            id="description"
+            type="text"
+            formControlName="description"
+            placeholder="e.g. Annual friends trip"
+            class="w-full rounded-xl border border-slate-200 bg-white/80 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+          />
+        </div>
+      </div>
+
+      <!-- Members Card -->
+      <div class="rounded-2xl border border-white/60 bg-white/70 p-5 shadow-lg shadow-indigo-500/5 backdrop-blur-xl sm:p-6">
+        <div class="mb-4">
+          <h2 class="text-sm font-bold text-slate-900">Who are you splitting with?</h2>
+          <p class="text-xs text-slate-500 mt-0.5">
+            You (the creator) will be added automatically. Add others below.
+          </p>
+        </div>
+
+        <!-- Member List (Chips) -->
+        @if (members().length > 0) {
+          <div class="mb-5 flex flex-wrap gap-2">
+            @for (member of members(); track $index) {
+              <div class="group flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-2 shadow-sm">
+                <div [class]="'flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ' + getAvatarColor(member.name)">
+                  {{ getInitials(member.name) }}
+                </div>
+                <span class="text-sm font-medium text-slate-700">{{ member.name }}</span>
+                <button
+                  type="button"
+                  (click)="removeMember($index)"
+                  class="ml-1 flex h-5 w-5 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"
+                  aria-label="Remove member"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                       stroke-width="2" stroke="currentColor" class="h-3.5 w-3.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Search & Add Input -->
+        <div class="relative">
+          <div class="relative">
+            <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                   stroke-width="1.8" stroke="currentColor" class="h-4 w-4">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+              </svg>
+            </span>
+            <input
+              type="text"
+              [value]="searchQuery()"
+              (input)="onSearchInput($event)"
+              (focus)="dropdownOpen.set(searchQuery().trim().length > 0)"
+              placeholder="Search by username/email, or type a name to add a guest…"
+              class="w-full rounded-xl border border-slate-200 bg-white/80 py-3 pl-10 pr-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+            />
+            @if (isSearching()) {
+              <span class="absolute right-3 top-1/2 -translate-y-1/2">
+                <svg class="h-4 w-4 animate-spin text-indigo-500" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25" stroke-width="4" />
+                  <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
+                </svg>
+              </span>
+            }
+          </div>
+
+          <!-- Dropdown Results -->
+          @if (dropdownOpen() && searchQuery().trim().length > 0) {
+            <div class="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-xl border border-white/60 bg-white/95 shadow-xl shadow-slate-900/10 backdrop-blur-xl animate-menu-in">
+
+              <!-- Registered Users -->
+              @if (searchResults().length > 0) {
+                <ul class="max-h-48 overflow-y-auto p-1.5">
+                  @for (user of searchResults(); track user.id) {
+                    <li>
+                      <button
+                        type="button"
+                        (click)="addRegisteredUser(user)"
+                        class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-slate-100"
+                      >
+                        <div [class]="'flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ' + getAvatarColor(user.username)">
+                          {{ getInitials(user.username) }}
+                        </div>
+                        <div class="min-w-0 flex-1">
+                          <p class="truncate text-sm font-medium text-slate-900">{{ user.username }}</p>
+                          <p class="truncate text-xs text-slate-500">{{ user.email }}</p>
+                        </div>
+                        <span class="text-[10px] font-semibold uppercase tracking-wider text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-md">Registered</span>
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
+
+              <!-- Add Dummy User Option -->
+              @else if (!isSearching()) {
+                <div class="p-3 text-center">
+                  <p class="text-xs text-slate-500 mb-2">No registered user found for "{{ searchQuery().trim() }}"</p>
+                  <button
+                    type="button"
+                    (click)="addDummyUser()"
+                    class="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 transition-colors hover:bg-indigo-100"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                         stroke-width="2" stroke="currentColor" class="h-3.5 w-3.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Add "{{ searchQuery().trim() }}" as a guest
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <a
+          routerLink="/splits"
+          class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white/80 px-6 py-3 text-sm font-semibold text-slate-600 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-900 hover:shadow-md"
+        >
+          Cancel
+        </a>
+        <button
+          type="submit"
+          [disabled]="isLoading() || members().length === 0"
+          class="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/40 active:translate-y-0 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+        >
+          @if (isLoading()) {
+            <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25" stroke-width="4" />
+              <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
+            </svg>
+            <span>Creating…</span>
+          } @else {
+            <span>Create Group</span>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke-width="2" stroke="currentColor"
+                 class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+            </svg>
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</section>

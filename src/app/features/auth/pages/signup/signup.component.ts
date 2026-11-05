@@ -68,6 +68,7 @@ export class SignupComponent {
   protected readonly form = this.fb.nonNullable.group(
     {
       username: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(15)]],
+      fullName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, passwordStrengthValidator]],
       confirmPassword: ['', [Validators.required]],
@@ -77,6 +78,9 @@ export class SignupComponent {
 
   protected get username() {
     return this.form.controls.username;
+  }
+  protected get fullName() {
+    return this.form.controls.fullName;
   }
   protected get email() {
     return this.form.controls.email;
@@ -167,10 +171,10 @@ export class SignupComponent {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    const { username, email, password } = this.form.getRawValue();
+    const { username, email, password, fullName } = this.form.getRawValue();
 
     this.auth
-      .register({ username, email, password })
+      .register({ username, email, password, fullName })
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: () => {

@@ -46,6 +46,11 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'splits',
+        loadChildren: () =>
+          import('./features/splitwise/splitwise.routes').then((m) => m.splitwiseRoutes),
+      },
+      {
         path: 'settings',
         loadChildren: () =>
           import('./features/settings/settings.routes').then((m) => m.settingsRoutes),

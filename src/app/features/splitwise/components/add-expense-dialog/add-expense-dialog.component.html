@@ -1,0 +1,123 @@
+<div class="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-0 backdrop-blur-sm animate-dialog-backdrop sm:items-center sm:p-4" (click)="cancelled.emit()">
+  <div class="flex max-h-[92dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl border border-white/60 bg-white/95 shadow-2xl backdrop-blur-xl animate-dialog-panel sm:rounded-3xl" (click)="$event.stopPropagation()">
+
+    <header class="flex items-center justify-between border-b border-slate-200/60 px-5 py-4">
+      <h2 class="text-lg font-bold text-slate-900">
+        {{ isEdit() ? 'Edit Expense' : 'Add an expense' }}
+      </h2>
+      <button (click)="cancelled.emit()" class="rounded-full p-2 text-slate-400 hover:bg-slate-100"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-5 w-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg></button>
+    </header>
+
+    <div class="flex-1 overflow-y-auto p-5 space-y-5">
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+        <!-- Description & Amount -->
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div class="group">
+            <label class="mb-1 block text-xs font-semibold text-slate-700">Description</label>
+            <input type="text" formControlName="description" placeholder="e.g. Dinner, Cab" class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20">
+          </div>
+          <div class="group">
+            <label class="mb-1 block text-xs font-semibold text-slate-700">Amount (₹)</label>
+            <input type="number" formControlName="amount" placeholder="0.00" class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-bold outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20">
+          </div>
+        </div>
+
+        <!-- Paid By & Date -->
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div class="group">
+            <label class="mb-1 block text-xs font-semibold text-slate-700">Paid By</label>
+            <select formControlName="paidByMemberId" class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-500">
+              @for (m of members(); track m.id) {
+                <option [value]="m.id">{{ m.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="group">
+            <label class="mb-1 block text-xs font-semibold text-slate-700">Date</label>
+            <input type="datetime-local" formControlName="expenseDate" class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <!-- Split Type Selector -->
+        <div class="pt-2">
+          <label class="mb-2 block text-xs font-semibold text-slate-700">Split Method</label>
+          <div class="flex rounded-xl bg-slate-100 p-1">
+            @for (t of splitTypes; track t.value) {
+              <button type="button" (click)="form.controls.splitType.setValue($any(t.value))"
+                      [class]="'flex-1 rounded-lg py-1.5 text-xs font-semibold transition-all ' + (form.controls.splitType.value === t.value ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700')">
+                {{ t.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Participants & Math -->
+        <div class="rounded-xl border border-slate-200 p-3 bg-slate-50/50">
+          @if (form.controls.splitType.value !== 'EQUAL') {
+            <div class="flex justify-between items-center mb-3 text-xs font-semibold border-b border-slate-200 pb-2">
+              <span class="text-slate-500">Distribution</span>
+
+              <div class="flex items-center gap-2">
+                @if (remainingAmount() === 0) {
+                  <span class="text-emerald-600 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd" /></svg>
+                    Perfect
+                  </span>
+                } @else if (remainingAmount() > 0) {
+                  <span class="text-amber-500">Remaining: {{ remainingAmount() }}</span>
+                } @else {
+                  <span class="text-red-500">Over by: {{ Math.abs(remainingAmount()) }}</span>
+                }
+              </div>
+            </div>
+          }
+
+          <div class="space-y-2">
+            @for (m of members(); track m.id) {
+              <div class="flex items-center justify-between gap-3">
+                <label class="flex items-center gap-2 flex-1 cursor-pointer">
+                  <input type="checkbox" [checked]="isSelected(m.id)" (change)="toggleMember(m.id)" class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                  <span class="text-sm font-medium text-slate-700">{{ m.name }}</span>
+                </label>
+
+                @if (form.controls.splitType.value !== 'EQUAL' && isSelected(m.id)) {
+                  <div class="relative w-24">
+                    @if (form.controls.splitType.value === 'PERCENTAGE') {
+                      <input
+                        type="number"
+                        [ngModel]="customAmounts()[m.id] || null"
+                        (ngModelChange)="updateCustomAmount(m.id, $event)"
+                        [ngModelOptions]="{standalone: true}"
+                        placeholder="%"
+                        class="w-full rounded-md border border-slate-200 px-2 py-1 text-right text-sm outline-none focus:border-indigo-500">
+                    } @else {
+                      <input
+                        type="number"
+                        [ngModel]="customAmounts()[m.id] || null"
+                        (ngModelChange)="updateCustomAmount(m.id, $event)"
+                        [ngModelOptions]="{standalone: true}"
+                        placeholder="₹"
+                        class="w-full rounded-md border border-slate-200 px-2 py-1 text-right text-sm outline-none focus:border-indigo-500">
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        @if (errorMessage()) {
+          <p class="text-xs text-red-600">{{ errorMessage() }}</p>
+        }
+      </form>
+    </div>
+
+    <footer class="border-t border-slate-200/60 p-4 bg-slate-50">
+      <button (click)="onSubmit()" [disabled]="isLoading() || form.invalid || !isValidDistribution()"
+              class="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 py-3 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0">
+        {{ isLoading() ? 'Saving...' : (isEdit() ? 'Save Changes' : 'Save Expense') }}
+      </button>
+    </footer>
+  </div>
+</div>

@@ -1,0 +1,28 @@
+/* Hide the modal backdrop and overflow scrolls on print */
+@media print {
+  /* 1. Hide the rest of the app */
+  body * {
+    visibility: hidden;
+  }
+
+  /* 2. Make ONLY the report visible */
+  #print-section, #print-section * {
+    visibility: visible;
+  }
+
+  /* 3. Reset positioning so it flows naturally on A4 paper */
+  #print-section {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* 4. Ensure background colors print properly (for the indigo totals) */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
